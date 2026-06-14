@@ -1,6 +1,6 @@
 {
   "isSample": false,
-  "generatedAt": "2026-06-14T20:30:43.498Z",
+  "generatedAt": "2026-06-14T20:47:51.877Z",
   "competition": {
     "name": "FIFA World Cup 2026",
     "startDate": "2026-06-11"
@@ -21,8 +21,8 @@
       "km": null,
       "required": 27,
       "remaining": null,
-      "progress": null,
-      "status": "pending",
+      "progress": 0,
+      "status": "error",
       "runs": []
     },
     {
@@ -36,5 +36,7 @@
       "runs": []
     }
   ],
-  "errors": []
+  "errors": [
+    "km Tiago: HTTP 401 ao ler a folha — partilha-a como \"Qualquer pessoa com o link: Visualizador\""
+  ]
 }
