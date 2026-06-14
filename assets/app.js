@@ -248,6 +248,19 @@ document.addEventListener("keydown", (e) => {
   if (e.key === "Escape" && !modal.hidden) closeModal();
 });
 
+/* ---------- imagens opcionais ---------- */
+// Esconde a foto / logótipo enquanto os ficheiros não existirem em assets/,
+// para nunca aparecer um ícone de imagem partida.
+function hideOptionalImage(img) {
+  const fig = img.closest(".photo");
+  if (fig) fig.style.display = "none";
+  else img.style.display = "none";
+}
+document.querySelectorAll("img[data-optional]").forEach((img) => {
+  img.addEventListener("error", () => hideOptionalImage(img));
+  if (img.complete && img.naturalWidth === 0) hideOptionalImage(img);
+});
+
 /* ---------- carregamento ---------- */
 
 async function load() {
