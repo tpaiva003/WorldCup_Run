@@ -378,6 +378,74 @@ async function fetchKm(sheet) {
   return { km, runs };
 }
 
+function normName(s) {
+  return String(s || "")
+    .trim()
+    .toLowerCase()
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, ""); // tira acentos
+}
+
+// Lê uma folha partilhada com uma linha por corrida (Atleta | Data | KM) e
+// distribui as corridas pelos atletas (por nome / alias). Devolve Map<id, runs>.
+async function fetchSharedRuns(kmSheet, runners) {
+  const rows = parseCsv(await fetchSheetCsv(kmSheet.id, kmSheet.gid ?? "0"));
+  if (rows.length < 2) return new Map();
+  const header = rows[0].map((h) => h.trim());
+  log(`folha km — cabeçalhos: ${header.join(" | ")}`);
+
+  const find = (re) => header.findIndex((h) => re.test(h));
+  let atletaCol = find(/atleta|nome|corredor|quem|runner|name/i);
+  let dateCol = find(/data|date|dia/i);
+  let kmCol = find(/km|dist/i);
+  if (kmCol === -1) {
+    let best = -1;
+    let bestN = 0;
+    for (let c = 0; c < header.length; c++) {
+      if (c === atletaCol || c === dateCol) continue;
+      let n = 0;
+      for (let i = 1; i < rows.length; i++) if (toNumber(rows[i][c]) != null) n++;
+      if (n > bestN) {
+        bestN = n;
+        best = c;
+      }
+    }
+    kmCol = best;
+  }
+  if (atletaCol === -1) atletaCol = 0;
+  if (kmCol === -1) throw new Error("não encontrei a coluna dos km");
+
+  const factor = unitFactor(null, header[kmCol]);
+  const aliasMap = new Map();
+  for (const r of runners) {
+    aliasMap.set(normName(r.name), r.id);
+    for (const a of r.aliases ?? []) aliasMap.set(normName(a), r.id);
+  }
+
+  const byRunner = new Map();
+  const seen = new Set();
+  for (let i = 1; i < rows.length; i++) {
+    const who = aliasMap.get(normName(rows[i][atletaCol]));
+    if (!who) continue;
+    const cell = (rows[i][kmCol] ?? "").trim();
+    const raw = toNumber(cell);
+    if (raw == null) continue;
+    const date =
+      dateCol >= 0
+        ? normalizeDate(rows[i][dateCol]) ||
+          ((rows[i][dateCol] ?? "").trim() || null)
+        : null;
+    const key = `${who}|${date ?? ""}|${cell}`;
+    if (seen.has(key)) continue;
+    seen.add(key);
+    const km = Math.round(raw * factor * 100) / 100;
+    if (!byRunner.has(who)) byRunner.set(who, []);
+    byRunner.get(who).push({ date, km });
+  }
+  for (const [id, rs] of byRunner) log(`folha km: ${id} -> ${rs.length} corrida(s)`);
+  return byRunner;
+}
+
 /* ------------------------------------------------------------------ */
 /* Orquestração                                                        */
 /* ------------------------------------------------------------------ */
@@ -408,39 +476,49 @@ async function main() {
   const kmPerGoal = config.challenge?.kmPerGoal ?? 1;
   const required = goals.total * kmPerGoal;
 
+  // Folha partilhada de km (uma linha por corrida: Atleta | Data | KM).
+  let sharedRuns = new Map();
+  if (config.kmSheet && config.kmSheet.id) {
+    try {
+      sharedRuns = await fetchSharedRuns(config.kmSheet, config.runners);
+    } catch (e) {
+      warn(`folha km: ${e.message}`);
+      errors.push(`folha km: ${e.message}`);
+    }
+  }
+
   // Atletas
   const runners = [];
   for (const r of config.runners ?? []) {
-    const prev = prevRunners.get(r.id) ?? {};
-    let km = null;
     let runs = [];
     let status = "ok";
+    let errored = false;
 
-    if (Array.isArray(r.manualRuns) && r.manualRuns.length) {
-      // Dados manuais (só corrida) — fonte preferida.
-      runs = r.manualRuns
-        .map((x) => ({
-          date: normalizeDate(x.date) ?? x.date ?? null,
-          km: Math.round((Number(x.km) || 0) * 100) / 100,
-        }))
-        .sort((a, b) => String(b.date).localeCompare(String(a.date)));
-      km = Math.round(runs.reduce((s, x) => s + x.km, 0) * 100) / 100;
-      log(`km ${r.id}: ${runs.length} corrida(s) manuais, total ${km} km`);
+    const fromSheet = sharedRuns.get(r.id) || [];
+    if (fromSheet.length) {
+      runs = fromSheet; // folha partilhada (preferida)
+    } else if (Array.isArray(r.manualRuns) && r.manualRuns.length) {
+      runs = r.manualRuns.map((x) => ({
+        date: normalizeDate(x.date) || x.date || null,
+        km: Math.round((Number(x.km) || 0) * 100) / 100,
+      }));
     } else if (r.sheet) {
-      km = prevWasSample ? null : prev.km ?? null;
-      runs = prevWasSample ? [] : prev.runs ?? [];
       try {
-        const result = await fetchKm(r.sheet);
-        km = result.km;
-        runs = result.runs;
+        runs = (await fetchKm(r.sheet)).runs;
       } catch (e) {
-        warn(`km ${r.id}: ${e.message} — mantido valor anterior`);
+        warn(`km ${r.id}: ${e.message}`);
         errors.push(`km ${r.name}: ${e.message}`);
-        status = km == null ? "error" : "stale";
+        errored = true;
       }
-    } else {
-      status = "pending";
     }
+
+    runs = runs
+      .slice()
+      .sort((a, b) => String(b.date).localeCompare(String(a.date)));
+    const km = runs.length
+      ? Math.round(runs.reduce((s, x) => s + x.km, 0) * 100) / 100
+      : null;
+    if (km == null) status = errored ? "error" : "pending";
 
     const stats = computeStats(runs, config.competition.startDate);
     runners.push({

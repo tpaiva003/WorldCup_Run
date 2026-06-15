@@ -37,39 +37,39 @@ automaticamente) e o objetivo de cada atleta é igual ao total de golos.
 > Os dados que vêm no repositório são **de exemplo** (marcados como tal no site)
 > só para se ver o aspeto. A primeira execução do Action substitui-os pelos reais.
 
-## Adicionar o José
+## Registar os km (folha partilhada)
 
-Quando souberes o link da folha dele, edita o `config.json`:
+A forma mais fácil de manter o site atualizado é uma **única folha Google** com
+**uma linha por corrida** (só corridas — não caminhadas):
 
-```json
-{
-  "id": "jose",
-  "name": "José",
-  "sheet": { "id": "ID_DA_FOLHA_DO_JOSE", "gid": "0", "distanceColumn": null }
-}
-```
+| Atleta | Data | KM |
+|---|---|---|
+| José | 2026-06-14 | 10 |
+| Tiago | 2026-06-14 | 10 |
+| José | 2026-06-13 | 4.04 |
 
-O `id` da folha é a parte do link entre `/d/` e `/edit`.
+- A folha tem de estar partilhada como **"Qualquer pessoa com o link: Visualizador"**.
+- O id da folha vai no `config.json` em `kmSheet.id` (a parte do link entre `/d/` e `/edit`).
+- O nome na coluna **Atleta** tem de bater com o `name`/`aliases` de cada corredor.
+- Para registar uma corrida, **acrescenta uma linha** — o site atualiza-se sozinho (de 30 em 30 min).
+
+O script deteta as colunas pelo cabeçalho (*Atleta/Nome*, *Data*, *KM/Distância*),
+remove duplicados (mesma data + distância) e converte metros → km se o cabeçalho
+disser `(m)`. Se a folha falhar ou estiver vazia, usa o `manualRuns` de cada
+corredor (em `config.json`) como reserva.
 
 ## Afinações no `config.json`
 
 | Campo | O que faz |
 |---|---|
 | `challenge.kmPerGoal` | Km por golo (por omissão **1**). |
-| `competition.startDate` | Dia a partir do qual se contam golos (`2026-06-11`). |
-| `runners[].sheet.gid` | Separador da folha (`0` = primeiro). |
-| `runners[].sheet.distanceColumn` | Nome (ou índice) da coluna dos km. `null` = deteta automaticamente. |
+| `competition.startDate` | Início do mundial; conta golos e sequências a partir daqui. |
+| `kmSheet.id` / `.gid` | Folha partilhada de km e o separador (`0` = primeiro). |
+| `runners[].name` / `.aliases` | Nome mostrado e nomes aceites na coluna *Atleta*. |
+| `runners[].manualRuns` | Corridas manuais (reserva): `[{ "date": "2026-06-14", "km": 10 }]`. |
 
-### Como são lidos os km
-
-O script exporta a folha em CSV e soma a coluna da distância:
-
-1. usa a coluna indicada em `distanceColumn`, se existir;
-2. senão, procura um cabeçalho com *km* / *dist*;
-3. senão, usa a coluna com mais valores numéricos.
-
-Aceita vírgula decimal e unidades (ex.: `5,2 km` → `5.2`). Os logs do Action
-mostram que coluna foi usada — útil para confirmar.
+A ordem dos corredores no `config.json` é a ordem dos cartões no site.
+O site tem ainda um **botão PT/EN** no canto superior para trocar de idioma.
 
 ## Correr localmente
 

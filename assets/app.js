@@ -7,12 +7,144 @@
 
 const REFRESH_MS = 5 * 60 * 1000; // 5 min
 const REDUCED = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-const nf = new Intl.NumberFormat("pt-PT");
-const nf1 = new Intl.NumberFormat("pt-PT", { maximumFractionDigits: 1 });
+const LOCALE = { pt: "pt-PT", en: "en-GB" };
+let lang = localStorage.getItem("lang") === "en" ? "en" : "pt";
+let nf = new Intl.NumberFormat(LOCALE[lang]);
+let nf1 = new Intl.NumberFormat(LOCALE[lang], { maximumFractionDigits: 1 });
 
 const $ = (sel, root = document) => root.querySelector(sel);
 
 let currentData = null; // último data.json carregado (para o modal)
+
+/* ---------- i18n (PT / EN) ---------- */
+
+const I18N = {
+  pt: {
+    introEyebrow: "FIFA WORLD CUP 2026 · SAÚDE · DESAFIO",
+    introTitle: "O Mundial marca golos.<br />Nós pagamos a correr.",
+    introSub:
+      "1 golo = 1 km. Estás a um clique de ver quem aguenta o ritmo do Mundial.",
+    enter: "ENTRAR",
+    introHint: "🔊 liga o som antes de entrar",
+    heroEyebrow: "FIFA WORLD CUP 2026 — DESAFIO",
+    heroTitle:
+      'Por cada golo do Mundial,<br />corremos <span class="hl">1&nbsp;km</span>.',
+    goalsUnit: "GOLOS",
+    goalsSub: "= KM A CORRER, CADA UM",
+    since: "desde o primeiro golo",
+    photoSub: "EM PROVA · O DESAFIO COMEÇOU",
+    lastUpdate: "ÚLT. ATUALIZAÇÃO",
+    matches: "JOGOS",
+    source: "FONTE",
+    sample: "DADOS DE EXEMPLO",
+    kmRun: "km corridos",
+    goal: "meta",
+    toGo: "em falta",
+    done: "completo ✓",
+    longestRun: "corrida + longa",
+    runStreak: "dias seg. a correr",
+    restStreak: "dias seg. sem correr",
+    runLog: "REGISTO DE CORRIDAS",
+    runsCount: "corridas",
+    colDate: "DATA",
+    colKm: "KM",
+    noRuns: "Sem corridas registadas ainda.",
+    music: "MÚSICA",
+    playing: "A TOCAR",
+    live: "AO VIVO",
+    sampleTag: "EXEMPLO",
+    paused: "EM PAUSA",
+    noData: "SEM DADOS",
+    stateSoon: "EM BREVE",
+    stateOnTrack: "EM DIA",
+    stateBehind: "EM DÍVIDA",
+    justNow: "agora mesmo",
+    minAgo: "há {n} min",
+    hAgo: "há {n} h",
+    run: "Corrida",
+    goalsWord: "golos",
+  },
+  en: {
+    introEyebrow: "FIFA WORLD CUP 2026 · HEALTH · CHALLENGE",
+    introTitle: "The World Cup scores goals.<br />We pay in kilometres.",
+    introSub:
+      "1 goal = 1 km. You're one click from seeing who keeps up with the World Cup.",
+    enter: "ENTER",
+    introHint: "🔊 turn your sound on before entering",
+    heroEyebrow: "FIFA WORLD CUP 2026 — CHALLENGE",
+    heroTitle:
+      'For every World Cup goal,<br />we run <span class="hl">1&nbsp;km</span>.',
+    goalsUnit: "GOALS",
+    goalsSub: "= KM TO RUN, EACH",
+    since: "since the first goal",
+    photoSub: "IN THE RACE · THE CHALLENGE IS ON",
+    lastUpdate: "LAST UPDATE",
+    matches: "MATCHES",
+    source: "SOURCE",
+    sample: "SAMPLE DATA",
+    kmRun: "km run",
+    goal: "goal",
+    toGo: "to go",
+    done: "done ✓",
+    longestRun: "longest run",
+    runStreak: "days running in a row",
+    restStreak: "days without running",
+    runLog: "RUN LOG",
+    runsCount: "runs",
+    colDate: "DATE",
+    colKm: "KM",
+    noRuns: "No runs logged yet.",
+    music: "MUSIC",
+    playing: "PLAYING",
+    live: "LIVE",
+    sampleTag: "SAMPLE",
+    paused: "PAUSED",
+    noData: "NO DATA",
+    stateSoon: "SOON",
+    stateOnTrack: "ON TRACK",
+    stateBehind: "BEHIND",
+    justNow: "just now",
+    minAgo: "{n} min ago",
+    hAgo: "{n} h ago",
+    run: "Run",
+    goalsWord: "goals",
+  },
+};
+
+function t(key) {
+  return (I18N[lang] && I18N[lang][key]) || I18N.pt[key] || key;
+}
+
+function applyStaticI18n() {
+  document.documentElement.lang = lang;
+  document.querySelectorAll("[data-i18n]").forEach((el) => {
+    el.textContent = t(el.dataset.i18n);
+  });
+  document.querySelectorAll("[data-i18n-html]").forEach((el) => {
+    el.innerHTML = t(el.dataset.i18nHtml);
+  });
+  document.querySelectorAll(".lang-opt").forEach((b) => {
+    b.classList.toggle("is-active", b.dataset.lang === lang);
+  });
+}
+
+function setLang(l) {
+  if (l !== "pt" && l !== "en") return;
+  lang = l;
+  localStorage.setItem("lang", l);
+  nf = new Intl.NumberFormat(LOCALE[lang]);
+  nf1 = new Intl.NumberFormat(LOCALE[lang], { maximumFractionDigits: 1 });
+  if (currentData) render(currentData);
+  else applyStaticI18n();
+  if (typeof anthem !== "undefined" && anthem) {
+    setMusicPlayingUI(!anthem.paused);
+  }
+}
+
+document.querySelectorAll(".lang-opt").forEach((b) => {
+  b.addEventListener("click", () => setLang(b.dataset.lang));
+});
+applyStaticI18n(); // aplica logo (intro/hero, antes de os dados chegarem)
 
 /* ---------- utilidades ---------- */
 
@@ -23,7 +155,7 @@ function formatDate(iso, withTime = false) {
   const opts = withTime
     ? { day: "2-digit", month: "short", hour: "2-digit", minute: "2-digit" }
     : { day: "2-digit", month: "short", year: "numeric" };
-  return d.toLocaleString("pt-PT", opts);
+  return d.toLocaleString(LOCALE[lang], opts);
 }
 
 function relativeTime(iso) {
@@ -31,10 +163,10 @@ function relativeTime(iso) {
   const diff = Date.now() - new Date(iso).getTime();
   if (Number.isNaN(diff)) return "—";
   const min = Math.round(diff / 60000);
-  if (min < 1) return "agora mesmo";
-  if (min < 60) return `há ${min} min`;
+  if (min < 1) return t("justNow");
+  if (min < 60) return t("minAgo").replace("{n}", min);
   const h = Math.round(min / 60);
-  if (h < 24) return `há ${h} h`;
+  if (h < 24) return t("hAgo").replace("{n}", h);
   return formatDate(iso);
 }
 
@@ -101,12 +233,12 @@ function renderRunners(data) {
     const state = $(".runner-state", card);
     state.classList.remove("ok", "debt");
     if (pending) {
-      state.textContent = "EM BREVE";
+      state.textContent = t("stateSoon");
     } else if (done) {
-      state.textContent = "EM DIA";
+      state.textContent = t("stateOnTrack");
       state.classList.add("ok");
     } else {
-      state.textContent = "EM DÍVIDA";
+      state.textContent = t("stateBehind");
       state.classList.add("debt");
     }
 
@@ -136,13 +268,13 @@ function renderRunners(data) {
     const remLabel = $(".meta-remaining-wrap", card).lastChild; // nó de texto
     if (pending) {
       remEl.textContent = "—";
-      remLabel.textContent = " em falta";
+      remLabel.textContent = " " + t("toGo");
     } else if (done) {
       remEl.textContent = "0 km";
-      remLabel.textContent = " — completo ✓";
+      remLabel.textContent = " — " + t("done");
     } else {
       remEl.textContent = `${nf1.format(remaining)} km`;
-      remLabel.textContent = " em falta";
+      remLabel.textContent = " " + t("toGo");
     }
 
     // estatísticas
@@ -180,11 +312,15 @@ function render(data) {
     data.generatedAt &&
     Date.now() - new Date(data.generatedAt).getTime() < 90 * 60 * 1000;
   live.classList.toggle("is-off", !fresh && !data.isSample);
-  live.querySelector("[data-live-label]").textContent =
-    data.isSample ? "EXEMPLO" : fresh ? "AO VIVO" : "EM PAUSA";
+  live.querySelector("[data-live-label]").textContent = data.isSample
+    ? t("sampleTag")
+    : fresh
+    ? t("live")
+    : t("paused");
 
   renderRunners(data);
-  document.title = `${data.goals?.total ?? 0} golos · Um Golo · Um Km`;
+  applyStaticI18n();
+  document.title = `${data.goals?.total ?? 0} ${t("goalsWord")} · Um Golo · Um Km`;
 }
 
 /* ---------- modal: registo de corridas ---------- */
@@ -193,7 +329,7 @@ const modal = $("#modal");
 let lastFocused = null;
 
 function formatRunDate(date, i) {
-  if (!date) return `Corrida ${i + 1}`;
+  if (!date) return `${t("run")} ${i + 1}`;
   if (/^\d{4}-\d{1,2}-\d{1,2}/.test(date)) {
     const d = new Date(date);
     if (!Number.isNaN(d.getTime())) {
@@ -286,7 +422,7 @@ function setMusicPlayingUI(playing) {
   musicBtn.classList.toggle("is-playing", playing);
   musicBtn.setAttribute("aria-pressed", String(playing));
   const lbl = musicBtn.querySelector(".sound-label");
-  if (lbl) lbl.textContent = playing ? "A TOCAR" : "MÚSICA";
+  if (lbl) lbl.textContent = playing ? t("playing") : t("music");
 }
 
 function playAnthem() {
@@ -392,7 +528,7 @@ async function load() {
     console.error("Falha ao carregar os dados:", e);
     const live = $("#liveTag");
     live.classList.add("is-off");
-    live.querySelector("[data-live-label]").textContent = "SEM DADOS";
+    live.querySelector("[data-live-label]").textContent = t("noData");
   }
 }
 

@@ -9,20 +9,26 @@
     "title": "UM GOLO · UM KM",
     "kmPerGoal": 1
   },
+  "kmSheet": {
+    "id": "1JQ2-8CBgzGFAKRDAiPcyzuNFlyVTIngVjun14ss4wqc",
+    "gid": "0"
+  },
   "runners": [
-    {
-      "id": "daniel",
-      "name": "Tiago",
-      "manualRuns": [
-        { "date": "2026-06-14", "km": 10 }
-      ]
-    },
     {
       "id": "jose",
       "name": "José",
+      "aliases": ["jose", "josé"],
       "manualRuns": [
         { "date": "2026-06-14", "km": 10 },
         { "date": "2026-06-13", "km": 4.04 }
+      ]
+    },
+    {
+      "id": "daniel",
+      "name": "Tiago",
+      "aliases": ["tiago"],
+      "manualRuns": [
+        { "date": "2026-06-14", "km": 10 }
       ]
     }
   ]

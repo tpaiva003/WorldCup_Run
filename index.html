@@ -9,8 +9,8 @@
       content="Por cada golo do Mundial 2026, corremos 1 km. Daniel × José."
     />
     <meta name="theme-color" content="#0a0a0b" />
-    <link rel="icon" href="assets/fifa-2026.png" />
-    <link rel="apple-touch-icon" href="assets/fifa-2026.png" />
+    <link rel="icon" href="assets/trophy.png" />
+    <link rel="apple-touch-icon" href="assets/trophy.png" />
 
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
@@ -23,19 +23,19 @@
   <body>
     <div id="intro" class="intro" role="dialog" aria-label="Entrar no site">
       <div class="intro-inner">
-        <img id="introTrophy" class="intro-trophy" src="assets/fifa-2026.png" alt="" />
-        <p class="intro-eyebrow mono">FIFA WORLD CUP 2026 · SAÚDE · DESAFIO</p>
-        <h1 class="intro-title">
+        <img id="introTrophy" class="intro-trophy" src="assets/trophy.png" alt="" />
+        <p class="intro-eyebrow mono" data-i18n="introEyebrow">FIFA WORLD CUP 2026 · SAÚDE · DESAFIO</p>
+        <h1 class="intro-title" data-i18n-html="introTitle">
           O Mundial marca golos.<br />Nós pagamos a correr.
         </h1>
-        <p class="intro-sub">
+        <p class="intro-sub" data-i18n="introSub">
           1 golo = 1 km. Estás a um clique de ver quem aguenta o ritmo do
           Mundial.
         </p>
         <button id="introEnter" class="intro-enter mono" type="button">
-          <span class="intro-ico">▶</span> ENTRAR
+          <span class="intro-ico">▶</span> <span data-i18n="enter">ENTRAR</span>
         </button>
-        <p class="intro-hint mono">🔊 liga o som antes de entrar</p>
+        <p class="intro-hint mono" data-i18n="introHint">🔊 liga o som antes de entrar</p>
       </div>
     </div>
 
@@ -50,23 +50,29 @@
       <span class="brand-wrap">
         <img
           class="brand-logo"
-          src="assets/fifa-2026.png"
+          src="assets/trophy.png"
           alt="FIFA World Cup 2026"
           data-optional
         />
         <span class="brand mono">UM&nbsp;GOLO&nbsp;·&nbsp;UM&nbsp;KM</span>
       </span>
-      <span class="live mono" id="liveTag">
-        <i class="live-dot"></i><span data-live-label>AO VIVO</span>
+      <span class="topbar-right">
+        <span class="lang mono" role="group" aria-label="Idioma / Language">
+          <button type="button" class="lang-opt" data-lang="pt">PT</button>
+          <button type="button" class="lang-opt" data-lang="en">EN</button>
+        </span>
+        <span class="live mono" id="liveTag">
+          <i class="live-dot"></i><span data-live-label>AO VIVO</span>
+        </span>
       </span>
     </header>
 
     <main class="wrap">
       <section class="hero">
-        <p class="eyebrow mono reveal" style="--d: 0">
+        <p class="eyebrow mono reveal" style="--d: 0" data-i18n="heroEyebrow">
           FIFA WORLD CUP 2026 — DESAFIO
         </p>
-        <h1 class="display reveal" style="--d: 1">
+        <h1 class="display reveal" style="--d: 1" data-i18n-html="heroTitle">
           Por cada golo do Mundial,<br />
           corremos <span class="hl">1&nbsp;km</span>.
         </h1>
@@ -74,13 +80,14 @@
         <div class="counter reveal" style="--d: 2">
           <div class="counter-num" id="goals" data-count="0">0</div>
           <div class="counter-side">
-            <span class="counter-unit mono">GOLOS</span>
-            <span class="counter-sub mono">= KM A CORRER, CADA UM</span>
+            <span class="counter-unit mono" data-i18n="goalsUnit">GOLOS</span>
+            <span class="counter-sub mono" data-i18n="goalsSub">= KM A CORRER, CADA UM</span>
           </div>
         </div>
 
         <p class="since mono reveal" style="--d: 3">
-          <span class="tick">▸</span> desde o primeiro golo
+          <span class="tick">▸</span>
+          <span data-i18n="since">desde o primeiro golo</span>
           <b id="firstGoal">—</b>
         </p>
       </section>
@@ -89,14 +96,14 @@
         <img
           class="photo-img"
           src="assets/runners.jpeg"
-          alt="Tiago e José em prova"
+          alt="José e Tiago em prova"
           data-optional
         />
         <figcaption class="photo-cap">
           <span class="photo-names">
-            TIAGO <span class="x">×</span> JOSÉ
+            JOSÉ <span class="x">×</span> TIAGO
           </span>
-          <span class="photo-sub mono">EM PROVA · O DESAFIO COMEÇOU</span>
+          <span class="photo-sub mono" data-i18n="photoSub">EM PROVA · O DESAFIO COMEÇOU</span>
         </figcaption>
       </figure>
 
@@ -105,10 +112,10 @@
       </section>
 
       <footer class="statusbar mono reveal" style="--d: 4">
-        <span class="st"><b>ÚLT. ATUALIZAÇÃO</b> <span id="updated">—</span></span>
-        <span class="st"><b>JOGOS</b> <span id="matches">—</span></span>
-        <span class="st"><b>FONTE</b> ESPN · FIFA WORLD CUP</span>
-        <span class="st sample" id="sampleTag" hidden>DADOS DE EXEMPLO</span>
+        <span class="st"><b data-i18n="lastUpdate">ÚLT. ATUALIZAÇÃO</b> <span id="updated">—</span></span>
+        <span class="st"><b data-i18n="matches">JOGOS</b> <span id="matches">—</span></span>
+        <span class="st"><b data-i18n="source">FONTE</b> ESPN · FIFA WORLD CUP</span>
+        <span class="st sample" id="sampleTag" hidden data-i18n="sample">DADOS DE EXEMPLO</span>
       </footer>
     </main>
 
@@ -120,7 +127,7 @@
         </div>
         <div class="runner-km">
           <span class="km-num" data-count="0">0</span>
-          <span class="km-unit mono">km corridos</span>
+          <span class="km-unit mono" data-i18n="kmRun">km corridos</span>
         </div>
         <div
           class="progress"
@@ -131,21 +138,21 @@
           <div class="progress-fill"></div>
         </div>
         <div class="runner-meta mono">
-          <span><b class="meta-required">—</b> meta</span>
+          <span><b class="meta-required">—</b> <span data-i18n="goal">meta</span></span>
           <span class="meta-remaining-wrap"><b class="meta-remaining">—</b> em falta</span>
         </div>
         <div class="runner-stats mono">
           <div class="rstat">
             <span class="rstat-val stat-longest">—</span>
-            <span class="rstat-lbl">corrida + longa</span>
+            <span class="rstat-lbl" data-i18n="longestRun">corrida + longa</span>
           </div>
           <div class="rstat good">
             <span class="rstat-val stat-runstreak">—</span>
-            <span class="rstat-lbl">dias seg. a correr</span>
+            <span class="rstat-lbl" data-i18n="runStreak">dias seg. a correr</span>
           </div>
           <div class="rstat bad">
             <span class="rstat-val stat-reststreak">—</span>
-            <span class="rstat-lbl">dias seg. sem correr</span>
+            <span class="rstat-lbl" data-i18n="restStreak">dias seg. sem correr</span>
           </div>
         </div>
       </article>
@@ -167,24 +174,24 @@
         >
           ✕
         </button>
-        <p class="modal-eyebrow mono">REGISTO DE CORRIDAS</p>
+        <p class="modal-eyebrow mono" data-i18n="runLog">REGISTO DE CORRIDAS</p>
         <h2 class="modal-name" id="modalName">—</h2>
         <div class="modal-stat mono">
-          <span><b id="modalKm">—</b> km corridos</span>
+          <span><b id="modalKm">—</b> <span data-i18n="kmRun">km corridos</span></span>
           <span class="modal-sep">/</span>
-          <span><b id="modalRuns">—</b> corridas</span>
+          <span><b id="modalRuns">—</b> <span data-i18n="runsCount">corridas</span></span>
         </div>
         <div class="modal-body">
           <table class="runs-table">
             <thead>
               <tr>
-                <th class="mono">DATA</th>
-                <th class="mono runs-km-col">KM</th>
+                <th class="mono" data-i18n="colDate">DATA</th>
+                <th class="mono runs-km-col" data-i18n="colKm">KM</th>
               </tr>
             </thead>
             <tbody id="runsBody"></tbody>
           </table>
-          <p class="runs-empty mono" id="runsEmpty" hidden>
+          <p class="runs-empty mono" id="runsEmpty" hidden data-i18n="noRuns">
             Sem corridas registadas ainda.
           </p>
         </div>

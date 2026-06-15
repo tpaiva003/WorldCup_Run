@@ -116,7 +116,7 @@ b {
   right: -3vw;
   width: min(44vw, 520px);
   height: min(68vh, 700px);
-  background: url("fifa-2026.png") no-repeat center / contain;
+  background: url("trophy.png") no-repeat center / contain;
   opacity: 0.07;
   -webkit-mask-image: radial-gradient(closest-side, #000 55%, transparent);
   mask-image: radial-gradient(closest-side, #000 55%, transparent);
@@ -162,6 +162,40 @@ b {
   font-size: 12.5px;
   letter-spacing: 0.16em;
   color: var(--text);
+}
+
+.topbar-right {
+  display: inline-flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.lang {
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+  border: 1px solid var(--border);
+  border-radius: 100px;
+  padding: 2px;
+}
+.lang-opt {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  letter-spacing: 0.1em;
+  color: var(--muted);
+  background: none;
+  border: 0;
+  padding: 4px 9px;
+  border-radius: 100px;
+  cursor: pointer;
+  transition: color 0.25s var(--ease), background 0.25s var(--ease);
+}
+.lang-opt:hover {
+  color: var(--text);
+}
+.lang-opt.is-active {
+  color: #0a0a0b;
+  background: var(--accent);
 }
 
 .live {

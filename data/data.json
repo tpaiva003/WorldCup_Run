@@ -16,26 +16,6 @@
   },
   "runners": [
     {
-      "id": "daniel",
-      "name": "Tiago",
-      "km": 10,
-      "required": 38,
-      "remaining": 28,
-      "progress": 0.2631578947368421,
-      "status": "ok",
-      "stats": {
-        "longestRun": 10,
-        "runStreak": 1,
-        "restStreak": 3
-      },
-      "runs": [
-        {
-          "date": "2026-06-14",
-          "km": 10
-        }
-      ]
-    },
-    {
       "id": "jose",
       "name": "José",
       "km": 14.04,
@@ -43,20 +23,23 @@
       "remaining": 23.96,
       "progress": 0.3694736842105263,
       "status": "ok",
-      "stats": {
-        "longestRun": 10,
-        "runStreak": 2,
-        "restStreak": 2
-      },
+      "stats": { "longestRun": 10, "runStreak": 2, "restStreak": 2 },
       "runs": [
-        {
-          "date": "2026-06-14",
-          "km": 10
-        },
-        {
-          "date": "2026-06-13",
-          "km": 4.04
-        }
+        { "date": "2026-06-14", "km": 10 },
+        { "date": "2026-06-13", "km": 4.04 }
+      ]
+    },
+    {
+      "id": "daniel",
+      "name": "Tiago",
+      "km": 10,
+      "required": 38,
+      "remaining": 28,
+      "progress": 0.2631578947368421,
+      "status": "ok",
+      "stats": { "longestRun": 10, "runStreak": 1, "restStreak": 3 },
+      "runs": [
+        { "date": "2026-06-14", "km": 10 }
       ]
     }
   ],
