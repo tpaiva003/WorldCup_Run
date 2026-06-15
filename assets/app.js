@@ -328,9 +328,35 @@ const introEnter = $("#introEnter");
 
 function enterSite() {
   if (!intro || intro.classList.contains("is-hidden")) return;
-  intro.classList.add("is-hidden");
   musicAutostarted = true;
   playAnthem(); // o clique conta como gesto -> o browser deixa tocar
+
+  // A taça voa do ecrã de entrada para o logótipo da barra de topo.
+  const trophy = $("#introTrophy");
+  const dest = document.querySelector(".brand-logo");
+  let flying = false;
+  if (trophy && dest && !REDUCED) {
+    const r1 = trophy.getBoundingClientRect();
+    const r2 = dest.getBoundingClientRect();
+    if (r1.height && r2.height) {
+      const scale = r2.height / r1.height;
+      const dx = r2.left + r2.width / 2 - (r1.left + r1.width / 2);
+      const dy = r2.top + r2.height / 2 - (r1.top + r1.height / 2);
+      dest.style.opacity = "0"; // esconde o logótipo real durante o voo
+      trophy.style.transition = "transform 0.9s cubic-bezier(0.22, 1, 0.36, 1)";
+      void trophy.offsetWidth; // força reflow antes de animar
+      trophy.style.transform = `translate(${dx}px, ${dy}px) scale(${scale})`;
+      intro.classList.add("is-leaving");
+      flying = true;
+    }
+  }
+
+  const finish = () => {
+    intro.classList.add("is-hidden");
+    if (dest) dest.style.opacity = "";
+  };
+  if (flying) setTimeout(finish, 950);
+  else intro.classList.add("is-hidden");
 }
 
 if (intro) {
