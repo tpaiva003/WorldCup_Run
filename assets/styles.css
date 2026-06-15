@@ -109,15 +109,15 @@ b {
   background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
 }
 
-/* Taça do Mundial em marca de água */
+/* Taça/logótipo do Mundial em marca de água */
 .bg-trophy {
   position: absolute;
   top: clamp(56px, 11vh, 132px);
   right: -3vw;
   width: min(44vw, 520px);
   height: min(68vh, 700px);
-  background: url("favicon.svg") no-repeat center / contain;
-  opacity: 0.06;
+  background: url("fifa-2026.png") no-repeat center / contain;
+  opacity: 0.07;
   -webkit-mask-image: radial-gradient(closest-side, #000 55%, transparent);
   mask-image: radial-gradient(closest-side, #000 55%, transparent);
 }
@@ -850,15 +850,15 @@ b {
 }
 
 .music-frame {
-  display: block;
   width: 100%;
-  height: 352px;
-  border: 0;
+  aspect-ratio: 16 / 9;
+  background: #000;
 }
-.music-frame iframe {
+.music-frame iframe,
+.music-frame > div {
   display: block;
   width: 100%;
-  height: 352px;
+  height: 100%;
   border: 0;
 }
 .sound:hover,

@@ -261,14 +261,13 @@ document.querySelectorAll("img[data-optional]").forEach((img) => {
   if (img.complete && img.naturalWidth === 0) hideOptionalImage(img);
 });
 
-/* ---------- música (Spotify iFrame API + arranque ao 1.º gesto) ---------- */
-// Nota: nenhum browser deixa tocar som ANTES de o utilizador interagir.
-// Por isso arrancamos a música no primeiro gesto (clique/tecla/toque) —
-// o mais próximo possível de "autoplay".
+/* ---------- música (YouTube IFrame API + arranque ao 1.º gesto) ---------- */
+// Nenhum browser deixa tocar som ANTES de o utilizador interagir, por isso
+// arrancamos no primeiro gesto (clique/tecla/toque) — o mais perto de autoplay.
 
 const musicBtn = $("#musicToggle");
 const musicPanel = $("#musicPanel");
-let spotifyCtl = null;
+let ytPlayer = null;
 let musicAutostarted = false;
 
 function setMusicPlayingUI(playing) {
@@ -284,34 +283,42 @@ function openMusicPanel(open) {
   musicBtn.setAttribute("aria-expanded", String(open));
 }
 
-function ctl(method) {
+function ytPlay() {
   try {
-    if (spotifyCtl && typeof spotifyCtl[method] === "function") spotifyCtl[method]();
-  } catch (_) {
-    /* controlador ainda não pronto */
-  }
+    if (ytPlayer && ytPlayer.playVideo) ytPlayer.playVideo();
+  } catch (_) {}
+}
+function ytPause() {
+  try {
+    if (ytPlayer && ytPlayer.pauseVideo) ytPlayer.pauseVideo();
+  } catch (_) {}
 }
 
-function useSpotifyApi(api) {
-  const el = $("#spotifyEmbed");
-  if (!el) return;
-  api.createController(
-    el,
-    { uri: el.dataset.uri, width: "100%", height: 352 },
-    (controller) => {
-      spotifyCtl = controller;
-      controller.addListener("playback_update", (e) => {
-        setMusicPlayingUI(!!(e && e.data && e.data.isPaused === false));
-      });
-      if (musicAutostarted) {
-        openMusicPanel(true);
-        ctl("play");
-      }
-    }
-  );
+function useYouTube() {
+  const el = $("#ytPlayer");
+  if (!el || !window.YT || !window.YT.Player) return;
+  ytPlayer = new YT.Player("ytPlayer", {
+    videoId: el.dataset.video,
+    playerVars: {
+      start: parseInt(el.dataset.start, 10) || 0,
+      rel: 0,
+      modestbranding: 1,
+      playsinline: 1,
+    },
+    events: {
+      onReady: () => {
+        if (musicAutostarted) {
+          openMusicPanel(true);
+          ytPlay();
+        }
+      },
+      // YT.PlayerState: PLAYING = 1
+      onStateChange: (e) => setMusicPlayingUI(e.data === 1),
+    },
+  });
 }
-if (window.__spotifyApi) useSpotifyApi(window.__spotifyApi);
-else window.__useSpotifyApi = useSpotifyApi;
+if (window.__ytReady) useYouTube();
+else window.__useYouTube = useYouTube;
 
 function musicFirstGesture(ev) {
   if (musicAutostarted) return;
@@ -323,7 +330,7 @@ function musicFirstGesture(ev) {
     window.removeEventListener(t, musicFirstGesture)
   );
   openMusicPanel(true);
-  ctl("play");
+  ytPlay();
 }
 ["pointerdown", "keydown", "touchstart"].forEach((t) =>
   window.addEventListener(t, musicFirstGesture, { passive: true })
@@ -334,18 +341,19 @@ if (musicBtn && musicPanel) {
     musicAutostarted = true;
     const willOpen = musicPanel.hidden;
     openMusicPanel(willOpen);
-    ctl(willOpen ? "play" : "pause");
+    if (willOpen) ytPlay();
+    else ytPause();
   });
   musicPanel.addEventListener("click", (e) => {
     if (e.target.hasAttribute("data-music-close")) {
       openMusicPanel(false);
-      ctl("pause");
+      ytPause();
     }
   });
   document.addEventListener("keydown", (e) => {
     if (e.key === "Escape" && musicPanel && !musicPanel.hidden) {
       openMusicPanel(false);
-      ctl("pause");
+      ytPause();
     }
   });
 }

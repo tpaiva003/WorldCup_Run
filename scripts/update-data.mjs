@@ -311,11 +311,15 @@ async function fetchSheetCsv(id, gid) {
 async function fetchKm(sheet) {
   const gid = sheet.gid ?? "0";
   const rows = parseCsv(await fetchSheetCsv(sheet.id, gid));
+  log(`cabeçalhos: ${(rows[0] ?? []).join(" | ")}`);
   const { km, label, colIndex, dateLabel, unit, runs } = computeKm(rows, sheet);
   log(
     `km: coluna "${label}" (índice ${colIndex}, unidade ${unit})` +
       `${dateLabel ? `, datas "${dateLabel}"` : ", sem coluna de datas"}, ` +
       `${runs.length} corrida(s), total ${km.toFixed(2)} km`
+  );
+  runs.forEach((r, i) =>
+    log(`  corrida ${i + 1}: ${r.date ?? "s/ data"} -> ${r.km} km`)
   );
   return { km, runs };
 }

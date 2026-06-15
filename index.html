@@ -9,8 +9,8 @@
       content="Por cada golo do Mundial 2026, corremos 1 km. Daniel × José."
     />
     <meta name="theme-color" content="#0a0a0b" />
-    <link rel="icon" href="assets/favicon.svg" type="image/svg+xml" />
-    <link rel="apple-touch-icon" href="assets/favicon.svg" />
+    <link rel="icon" href="assets/fifa-2026.png" />
+    <link rel="apple-touch-icon" href="assets/fifa-2026.png" />
 
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
@@ -172,11 +172,9 @@
             ✕
           </button>
         </div>
-        <div
-          id="spotifyEmbed"
-          class="music-frame"
-          data-uri="spotify:track:0kosUz0jePvjiz4ctmR6wL"
-        ></div>
+        <div class="music-frame">
+          <div id="ytPlayer" data-video="fcnDmrtj6Sk" data-start="10"></div>
+        </div>
       </div>
       <button
         id="musicToggle"
@@ -192,15 +190,13 @@
     </div>
 
     <script>
-      // Garante que o callback existe antes de a API do Spotify carregar.
-      window.onSpotifyIframeApiReady = function (api) {
-        window.__spotifyApi = api;
-        if (typeof window.__useSpotifyApi === "function") {
-          window.__useSpotifyApi(api);
-        }
+      // Garante que o callback existe antes de a API do YouTube carregar.
+      window.onYouTubeIframeAPIReady = function () {
+        window.__ytReady = true;
+        if (typeof window.__useYouTube === "function") window.__useYouTube();
       };
     </script>
-    <script src="https://open.spotify.com/embed/iframe-api/v1" async></script>
+    <script src="https://www.youtube.com/iframe_api" async></script>
     <script src="assets/app.js" defer></script>
   </body>
 </html>
