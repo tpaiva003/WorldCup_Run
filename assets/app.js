@@ -322,6 +322,37 @@ if (musicBtn && anthem) {
   });
 }
 
+/* ---------- ecrã de entrada (capta o 1.º gesto e arranca a música) ---------- */
+const intro = $("#intro");
+const introEnter = $("#introEnter");
+
+function enterSite() {
+  if (!intro || intro.classList.contains("is-hidden")) return;
+  intro.classList.add("is-hidden");
+  musicAutostarted = true;
+  playAnthem(); // o clique conta como gesto -> o browser deixa tocar
+}
+
+if (intro) {
+  intro.addEventListener("click", enterSite);
+  document.addEventListener("keydown", (e) => {
+    if (
+      !intro.classList.contains("is-hidden") &&
+      (e.key === "Enter" || e.key === " ")
+    ) {
+      e.preventDefault();
+      enterSite();
+    }
+  });
+  if (introEnter) {
+    try {
+      introEnter.focus({ preventScroll: true });
+    } catch (_) {
+      introEnter.focus();
+    }
+  }
+}
+
 /* ---------- carregamento ---------- */
 
 async function load() {

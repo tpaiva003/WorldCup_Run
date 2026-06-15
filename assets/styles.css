@@ -657,6 +657,88 @@ b {
   animation-delay: 0.52s;
 }
 
+/* ---------- Ecrã de entrada (desbloqueia a música) ---------- */
+
+.intro {
+  position: fixed;
+  inset: 0;
+  z-index: 100;
+  display: grid;
+  place-items: center;
+  background: var(--bg);
+  cursor: pointer;
+  transition: opacity 0.7s var(--ease), visibility 0.7s var(--ease);
+}
+.intro::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(
+    80% 60% at 50% 35%,
+    var(--accent-soft),
+    transparent 70%
+  );
+  opacity: 0.5;
+  pointer-events: none;
+}
+.intro.is-hidden {
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+}
+
+.intro-inner {
+  position: relative;
+  z-index: 1;
+  text-align: center;
+  padding: 24px;
+}
+.intro-eyebrow {
+  font-size: 11px;
+  letter-spacing: 0.22em;
+  color: var(--muted);
+  margin-bottom: 24px;
+}
+.intro-title {
+  font-size: clamp(2.4rem, 8vw, 5rem);
+  font-weight: 600;
+  letter-spacing: -0.03em;
+  margin-bottom: 38px;
+}
+.intro-enter {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  padding: 14px 28px;
+  font-size: 12px;
+  letter-spacing: 0.2em;
+  color: var(--text);
+  background: transparent;
+  border: 1px solid var(--border);
+  border-radius: 100px;
+  cursor: pointer;
+  transition: border-color 0.3s var(--ease), color 0.3s var(--ease),
+    transform 0.3s var(--ease), box-shadow 0.3s var(--ease);
+}
+.intro-enter:hover,
+.intro-enter:focus-visible {
+  border-color: var(--accent-line);
+  color: var(--accent);
+  transform: translateY(-2px);
+  outline: none;
+  box-shadow: 0 0 0 6px var(--accent-soft);
+}
+.intro-ico {
+  font-size: 10px;
+  color: var(--accent);
+}
+.intro-hint {
+  margin-top: 18px;
+  font-size: 10.5px;
+  letter-spacing: 0.16em;
+  color: var(--muted-2);
+}
+
 /* ---------- Modal: registo de corridas ---------- */
 
 .modal {
