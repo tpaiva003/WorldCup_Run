@@ -116,6 +116,20 @@
           <span><b class="meta-required">—</b> meta</span>
           <span class="meta-remaining-wrap"><b class="meta-remaining">—</b> em falta</span>
         </div>
+        <div class="runner-stats mono">
+          <div class="rstat">
+            <span class="rstat-val stat-longest">—</span>
+            <span class="rstat-lbl">corrida + longa</span>
+          </div>
+          <div class="rstat good">
+            <span class="rstat-val stat-runstreak">—</span>
+            <span class="rstat-lbl">dias seg. a correr</span>
+          </div>
+          <div class="rstat bad">
+            <span class="rstat-val stat-reststreak">—</span>
+            <span class="rstat-lbl">dias seg. sem correr</span>
+          </div>
+        </div>
       </article>
     </template>
 
@@ -160,43 +174,19 @@
     </div>
 
     <div class="music">
-      <div id="musicPanel" class="music-panel" hidden>
-        <div class="music-head mono">
-          <span>BANDA SONORA</span>
-          <button
-            class="music-close"
-            type="button"
-            data-music-close
-            aria-label="Fechar"
-          >
-            ✕
-          </button>
-        </div>
-        <div class="music-frame">
-          <div id="ytPlayer" data-video="fcnDmrtj6Sk" data-start="10"></div>
-        </div>
-      </div>
+      <audio id="anthem" src="assets/anthem.mp3" loop preload="auto"></audio>
       <button
         id="musicToggle"
         class="sound mono"
         type="button"
-        aria-expanded="false"
-        aria-controls="musicPanel"
-        aria-label="Abrir a playlist do desafio"
+        aria-pressed="false"
+        aria-label="Ligar ou desligar a música"
       >
         <span class="eq" aria-hidden="true"><i></i><i></i><i></i></span>
         <span class="sound-label">MÚSICA</span>
       </button>
     </div>
 
-    <script>
-      // Garante que o callback existe antes de a API do YouTube carregar.
-      window.onYouTubeIframeAPIReady = function () {
-        window.__ytReady = true;
-        if (typeof window.__useYouTube === "function") window.__useYouTube();
-      };
-    </script>
-    <script src="https://www.youtube.com/iframe_api" async></script>
     <script src="assets/app.js" defer></script>
   </body>
 </html>

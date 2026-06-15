@@ -556,6 +556,45 @@ b {
   color: var(--muted-2);
 }
 
+/* Estatísticas do atleta */
+.runner-stats {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 12px;
+  margin-top: 20px;
+  padding-top: 18px;
+  border-top: 1px solid var(--border-soft);
+}
+
+.rstat {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.rstat-val {
+  font-family: var(--font-display);
+  font-size: clamp(18px, 2.4vw, 22px);
+  font-weight: 600;
+  letter-spacing: -0.02em;
+  color: var(--text);
+  font-variant-numeric: tabular-nums;
+}
+
+.rstat.good .rstat-val {
+  color: var(--accent);
+}
+.rstat.bad .rstat-val {
+  color: #ffb84d;
+}
+
+.rstat-lbl {
+  font-size: 9.5px;
+  letter-spacing: 0.1em;
+  line-height: 1.35;
+  color: var(--muted-2);
+}
+
 /* ---------- Statusbar ---------- */
 
 .statusbar {
@@ -797,70 +836,6 @@ b {
     transform 0.3s var(--ease);
 }
 
-.music-panel {
-  width: min(360px, calc(100vw - 32px));
-  background: rgba(16, 17, 20, 0.92);
-  border: 1px solid var(--border);
-  border-radius: 16px;
-  overflow: hidden;
-  backdrop-filter: blur(12px);
-  box-shadow: 0 24px 60px rgba(0, 0, 0, 0.5);
-  transform-origin: bottom right;
-  animation: musicIn 0.3s var(--ease);
-}
-.music-panel[hidden] {
-  display: none;
-}
-
-@keyframes musicIn {
-  from {
-    opacity: 0;
-    transform: translateY(10px) scale(0.98);
-  }
-  to {
-    opacity: 1;
-    transform: none;
-  }
-}
-
-.music-head {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 12px 14px;
-  font-size: 10.5px;
-  letter-spacing: 0.18em;
-  color: var(--muted);
-  border-bottom: 1px solid var(--border-soft);
-}
-
-.music-close {
-  background: none;
-  border: 0;
-  color: var(--muted);
-  cursor: pointer;
-  font-size: 12px;
-  padding: 2px 4px;
-  transition: color 0.3s var(--ease);
-}
-.music-close:hover,
-.music-close:focus-visible {
-  color: var(--text);
-  outline: none;
-}
-
-.music-frame {
-  width: 100%;
-  aspect-ratio: 16 / 9;
-  background: #000;
-}
-.music-frame iframe,
-.music-frame > div {
-  display: block;
-  width: 100%;
-  height: 100%;
-  border: 0;
-}
 .sound:hover,
 .sound:focus-visible {
   color: var(--text);

@@ -18,35 +18,29 @@
     {
       "id": "daniel",
       "name": "Tiago",
-      "km": 29.22,
+      "km": 10,
       "required": 38,
-      "remaining": 8.78,
-      "progress": 0.7689473684210526,
+      "remaining": 28,
+      "progress": 0.2631578947368421,
       "status": "ok",
+      "stats": { "longestRun": 10, "runStreak": 1, "restStreak": 3 },
       "runs": [
-        {
-          "date": "2026-06-13",
-          "km": 0.84
-        },
-        {
-          "date": "2026-06-14",
-          "km": 14.45
-        },
-        {
-          "date": "2026-06-14",
-          "km": 13.94
-        }
+        { "date": "2026-06-14", "km": 10 }
       ]
     },
     {
       "id": "jose",
       "name": "José",
-      "km": null,
+      "km": 14.04,
       "required": 38,
-      "remaining": null,
-      "progress": null,
-      "status": "pending",
-      "runs": []
+      "remaining": 23.96,
+      "progress": 0.3694736842105263,
+      "status": "ok",
+      "stats": { "longestRun": 10, "runStreak": 2, "restStreak": 2 },
+      "runs": [
+        { "date": "2026-06-14", "km": 10 },
+        { "date": "2026-06-13", "km": 4.04 }
+      ]
     }
   ],
   "errors": []

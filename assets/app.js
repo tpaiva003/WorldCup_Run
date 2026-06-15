@@ -144,6 +144,18 @@ function renderRunners(data) {
       remEl.textContent = `${nf1.format(remaining)} km`;
       remLabel.textContent = " em falta";
     }
+
+    // estatísticas
+    const stats = r.stats || {};
+    $(".stat-longest", card).textContent = pending
+      ? "—"
+      : `${nf1.format(stats.longestRun || 0)} km`;
+    $(".stat-runstreak", card).textContent = pending
+      ? "—"
+      : nf.format(stats.runStreak || 0);
+    $(".stat-reststreak", card).textContent = pending
+      ? "—"
+      : nf.format(stats.restStreak || 0);
   });
 
   // remove cartões que já não existam na config
@@ -261,64 +273,31 @@ document.querySelectorAll("img[data-optional]").forEach((img) => {
   if (img.complete && img.naturalWidth === 0) hideOptionalImage(img);
 });
 
-/* ---------- música (YouTube IFrame API + arranque ao 1.º gesto) ---------- */
+/* ---------- música (ficheiro próprio + arranque ao 1.º gesto) ---------- */
 // Nenhum browser deixa tocar som ANTES de o utilizador interagir, por isso
 // arrancamos no primeiro gesto (clique/tecla/toque) — o mais perto de autoplay.
 
+const anthem = $("#anthem");
 const musicBtn = $("#musicToggle");
-const musicPanel = $("#musicPanel");
-let ytPlayer = null;
 let musicAutostarted = false;
 
 function setMusicPlayingUI(playing) {
   if (!musicBtn) return;
   musicBtn.classList.toggle("is-playing", playing);
+  musicBtn.setAttribute("aria-pressed", String(playing));
   const lbl = musicBtn.querySelector(".sound-label");
   if (lbl) lbl.textContent = playing ? "A TOCAR" : "MÚSICA";
 }
 
-function openMusicPanel(open) {
-  if (!musicPanel || !musicBtn) return;
-  musicPanel.hidden = !open;
-  musicBtn.setAttribute("aria-expanded", String(open));
+function playAnthem() {
+  if (anthem) anthem.play().catch(() => {});
 }
 
-function ytPlay() {
-  try {
-    if (ytPlayer && ytPlayer.playVideo) ytPlayer.playVideo();
-  } catch (_) {}
+if (anthem) {
+  anthem.volume = 0.6;
+  anthem.addEventListener("play", () => setMusicPlayingUI(true));
+  anthem.addEventListener("pause", () => setMusicPlayingUI(false));
 }
-function ytPause() {
-  try {
-    if (ytPlayer && ytPlayer.pauseVideo) ytPlayer.pauseVideo();
-  } catch (_) {}
-}
-
-function useYouTube() {
-  const el = $("#ytPlayer");
-  if (!el || !window.YT || !window.YT.Player) return;
-  ytPlayer = new YT.Player("ytPlayer", {
-    videoId: el.dataset.video,
-    playerVars: {
-      start: parseInt(el.dataset.start, 10) || 0,
-      rel: 0,
-      modestbranding: 1,
-      playsinline: 1,
-    },
-    events: {
-      onReady: () => {
-        if (musicAutostarted) {
-          openMusicPanel(true);
-          ytPlay();
-        }
-      },
-      // YT.PlayerState: PLAYING = 1
-      onStateChange: (e) => setMusicPlayingUI(e.data === 1),
-    },
-  });
-}
-if (window.__ytReady) useYouTube();
-else window.__useYouTube = useYouTube;
 
 function musicFirstGesture(ev) {
   if (musicAutostarted) return;
@@ -329,32 +308,17 @@ function musicFirstGesture(ev) {
   ["pointerdown", "keydown", "touchstart"].forEach((t) =>
     window.removeEventListener(t, musicFirstGesture)
   );
-  openMusicPanel(true);
-  ytPlay();
+  playAnthem();
 }
 ["pointerdown", "keydown", "touchstart"].forEach((t) =>
   window.addEventListener(t, musicFirstGesture, { passive: true })
 );
 
-if (musicBtn && musicPanel) {
+if (musicBtn && anthem) {
   musicBtn.addEventListener("click", () => {
     musicAutostarted = true;
-    const willOpen = musicPanel.hidden;
-    openMusicPanel(willOpen);
-    if (willOpen) ytPlay();
-    else ytPause();
-  });
-  musicPanel.addEventListener("click", (e) => {
-    if (e.target.hasAttribute("data-music-close")) {
-      openMusicPanel(false);
-      ytPause();
-    }
-  });
-  document.addEventListener("keydown", (e) => {
-    if (e.key === "Escape" && musicPanel && !musicPanel.hidden) {
-      openMusicPanel(false);
-      ytPause();
-    }
+    if (anthem.paused) playAnthem();
+    else anthem.pause();
   });
 }
 

@@ -13,16 +13,17 @@
     {
       "id": "daniel",
       "name": "Tiago",
-      "sheet": {
-        "id": "17O6iPs0HXj9fTmBd0Q27Na1AKAZNxIbEmMVyMb51790",
-        "gid": "0",
-        "distanceColumn": null
-      }
+      "manualRuns": [
+        { "date": "2026-06-14", "km": 10 }
+      ]
     },
     {
       "id": "jose",
       "name": "José",
-      "sheet": null
+      "manualRuns": [
+        { "date": "2026-06-14", "km": 10 },
+        { "date": "2026-06-13", "km": 4.04 }
+      ]
     }
   ]
 }

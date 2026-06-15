@@ -168,6 +168,60 @@ function unitFactor(configUnit, header) {
   return 1; // sem indicação: assume km
 }
 
+// Normaliza uma data para "YYYY-MM-DD" (aceita ISO e dd/mm/aaaa, dd.mm.aaaa).
+function normalizeDate(s) {
+  if (!s) return null;
+  s = String(s).trim();
+  let m = /^(\d{4})-(\d{1,2})-(\d{1,2})/.exec(s);
+  if (m) return `${m[1]}-${m[2].padStart(2, "0")}-${m[3].padStart(2, "0")}`;
+  m = /^(\d{1,2})[\/.](\d{1,2})[\/.](\d{4})/.exec(s);
+  if (m) return `${m[3]}-${m[2].padStart(2, "0")}-${m[1].padStart(2, "0")}`;
+  return null;
+}
+
+function ymdDash(date) {
+  return (
+    date.getUTCFullYear() +
+    "-" +
+    String(date.getUTCMonth() + 1).padStart(2, "0") +
+    "-" +
+    String(date.getUTCDate()).padStart(2, "0")
+  );
+}
+
+// Estatísticas por atleta: corrida mais longa e maiores sequências
+// (com e sem corrida), a contar desde o início do mundial.
+function computeStats(runs, startDateStr, todayDate) {
+  const longestRun = runs.reduce((mx, r) => Math.max(mx, Number(r.km) || 0), 0);
+  const runDays = new Set();
+  for (const r of runs) {
+    const d = normalizeDate(r.date);
+    if (d) runDays.add(d);
+  }
+  const start = new Date(startDateStr + "T00:00:00Z");
+  const today = todayDate || new Date();
+  let runStreak = 0;
+  let restStreak = 0;
+  let curRun = 0;
+  let curRest = 0;
+  for (let d = new Date(start); d <= today; d.setUTCDate(d.getUTCDate() + 1)) {
+    if (runDays.has(ymdDash(d))) {
+      curRun++;
+      curRest = 0;
+      if (curRun > runStreak) runStreak = curRun;
+    } else {
+      curRest++;
+      curRun = 0;
+      if (curRest > restStreak) restStreak = curRest;
+    }
+  }
+  return {
+    longestRun: Math.round(longestRun * 100) / 100,
+    runStreak,
+    restStreak,
+  };
+}
+
 // Heurística simples para reconhecer uma data (coluna do detalhe).
 function looksLikeDate(s) {
   if (!s) return false;
@@ -358,31 +412,37 @@ async function main() {
   const runners = [];
   for (const r of config.runners ?? []) {
     const prev = prevRunners.get(r.id) ?? {};
-    if (!r.sheet) {
-      runners.push({
-        id: r.id,
-        name: r.name,
-        km: null,
-        required,
-        remaining: null,
-        progress: null,
-        status: "pending",
-        runs: [],
-      });
-      continue;
-    }
-    let km = prevWasSample ? null : prev.km ?? null;
-    let runs = prevWasSample ? [] : prev.runs ?? [];
+    let km = null;
+    let runs = [];
     let status = "ok";
-    try {
-      const result = await fetchKm(r.sheet);
-      km = result.km;
-      runs = result.runs;
-    } catch (e) {
-      warn(`km ${r.id}: ${e.message} — mantido valor anterior`);
-      errors.push(`km ${r.name}: ${e.message}`);
-      status = km == null ? "error" : "stale";
+
+    if (Array.isArray(r.manualRuns) && r.manualRuns.length) {
+      // Dados manuais (só corrida) — fonte preferida.
+      runs = r.manualRuns
+        .map((x) => ({
+          date: normalizeDate(x.date) ?? x.date ?? null,
+          km: Math.round((Number(x.km) || 0) * 100) / 100,
+        }))
+        .sort((a, b) => String(b.date).localeCompare(String(a.date)));
+      km = Math.round(runs.reduce((s, x) => s + x.km, 0) * 100) / 100;
+      log(`km ${r.id}: ${runs.length} corrida(s) manuais, total ${km} km`);
+    } else if (r.sheet) {
+      km = prevWasSample ? null : prev.km ?? null;
+      runs = prevWasSample ? [] : prev.runs ?? [];
+      try {
+        const result = await fetchKm(r.sheet);
+        km = result.km;
+        runs = result.runs;
+      } catch (e) {
+        warn(`km ${r.id}: ${e.message} — mantido valor anterior`);
+        errors.push(`km ${r.name}: ${e.message}`);
+        status = km == null ? "error" : "stale";
+      }
+    } else {
+      status = "pending";
     }
+
+    const stats = computeStats(runs, config.competition.startDate);
     runners.push({
       id: r.id,
       name: r.name,
@@ -391,6 +451,7 @@ async function main() {
       remaining: km == null ? null : Math.round((required - km) * 100) / 100,
       progress: km == null || required === 0 ? 0 : km / required,
       status,
+      stats,
       runs,
     });
   }
@@ -415,7 +476,7 @@ async function main() {
 }
 
 // Exporta para testes; corre main() só quando invocado diretamente.
-export { parseCsv, toNumber, computeKm, fetchKm, fetchGoals, main };
+export { parseCsv, toNumber, computeKm, computeStats, normalizeDate, fetchKm, fetchGoals, main };
 
 if (import.meta.url === pathToFileURL(process.argv[1] ?? "").href) {
   main().catch((e) => {
