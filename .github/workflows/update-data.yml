@@ -27,8 +27,10 @@ jobs:
   update:
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout
+      - name: Checkout (sempre o main, que é o que o site publica)
         uses: actions/checkout@v4
+        with:
+          ref: main
 
       - name: Setup Node
         uses: actions/setup-node@v4
@@ -47,5 +49,6 @@ jobs:
           else
             git add data/data.json
             git commit -m "chore: atualizar dados do desafio"
-            git push
+            git pull --rebase origin main || true
+            git push origin HEAD:main
           fi

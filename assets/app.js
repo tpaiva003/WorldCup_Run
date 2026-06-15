@@ -310,7 +310,7 @@ function render(data) {
   const live = $("#liveTag");
   const fresh =
     data.generatedAt &&
-    Date.now() - new Date(data.generatedAt).getTime() < 90 * 60 * 1000;
+    Date.now() - new Date(data.generatedAt).getTime() < 150 * 60 * 1000;
   live.classList.toggle("is-off", !fresh && !data.isSample);
   live.querySelector("[data-live-label]").textContent = data.isSample
     ? t("sampleTag")
