@@ -168,13 +168,13 @@ function unitFactor(configUnit, header) {
   return 1; // sem indicação: assume km
 }
 
-// Normaliza uma data para "YYYY-MM-DD" (aceita ISO e dd/mm/aaaa, dd.mm.aaaa).
+// Normaliza uma data para "YYYY-MM-DD" (aceita ISO e dd/mm/aaaa, dd-mm-aaaa, dd.mm.aaaa).
 function normalizeDate(s) {
   if (!s) return null;
   s = String(s).trim();
   let m = /^(\d{4})-(\d{1,2})-(\d{1,2})/.exec(s);
   if (m) return `${m[1]}-${m[2].padStart(2, "0")}-${m[3].padStart(2, "0")}`;
-  m = /^(\d{1,2})[\/.](\d{1,2})[\/.](\d{4})/.exec(s);
+  m = /^(\d{1,2})[\/.\-](\d{1,2})[\/.\-](\d{4})/.exec(s);
   if (m) return `${m[3]}-${m[2].padStart(2, "0")}-${m[1].padStart(2, "0")}`;
   return null;
 }
