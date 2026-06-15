@@ -549,12 +549,49 @@ document.addEventListener("visibilitychange", () => {
 /* ---------- botão de atualizar (bola Trionda) ---------- */
 const refreshBtn = $("#refreshBtn");
 let refreshing = false;
+
+// Espera que o data.json mude (generatedAt diferente) depois de disparar a Action.
+async function waitForNewData(before, timeoutMs = 150000) {
+  const start = Date.now();
+  while (Date.now() - start < timeoutMs) {
+    await new Promise((r) => setTimeout(r, 4000));
+    try {
+      const res = await fetch("data/data.json?t=" + Date.now(), {
+        cache: "no-store",
+      });
+      if (res.ok) {
+        const data = await res.json();
+        if (data.generatedAt && data.generatedAt !== before) {
+          render(data);
+          return true;
+        }
+      }
+    } catch (_) {}
+  }
+  await load(); // tempo esgotado: mostra o que houver
+  return false;
+}
+
 async function manualRefresh() {
   if (refreshing) return;
   refreshing = true;
   if (refreshBtn) refreshBtn.classList.add("is-loading");
+  const triggerUrl = window.TRIONDA_TRIGGER_URL;
   const start = performance.now();
-  await load(); // vai buscar o data.json mais recente
+  try {
+    if (triggerUrl) {
+      // dispara uma recolha NOVA (golos + folha) e espera pelo resultado
+      const before = currentData && currentData.generatedAt;
+      const res = await fetch(triggerUrl, { method: "POST" });
+      if (!res.ok) throw new Error("trigger HTTP " + res.status);
+      await waitForNewData(before);
+    } else {
+      await load(); // sem Worker: só puxa os dados mais recentes já gravados
+    }
+  } catch (e) {
+    console.error("atualização:", e);
+    await load();
+  }
   const wait = 700 - (performance.now() - start); // gira pelo menos 0,7s
   if (wait > 0) await new Promise((r) => setTimeout(r, wait));
   if (refreshBtn) refreshBtn.classList.remove("is-loading");

@@ -71,6 +71,24 @@ corredor (em `config.json`) como reserva.
 A ordem dos corredores no `config.json` é a ordem dos cartões no site.
 O site tem ainda um **botão PT/EN** no canto superior para trocar de idioma.
 
+## Botão de atualizar na hora (bola Trionda)
+
+A bola Trionda na barra de topo atualiza os dados. Por omissão **puxa** os
+dados mais recentes já gravados. Para a fazer **disparar uma recolha nova**
+(golos + folha) na hora — útil logo a seguir a uma corrida — monta o
+Cloudflare Worker (grátis):
+
+1. **Token GitHub:** *Settings → Developer settings → Fine-grained tokens* →
+   repo `WorldCup_Run`, permissão **Actions: Read and write**.
+2. **Worker:** em *dash.cloudflare.com → Workers & Pages → Create*, cola
+   `worker/trionda-trigger.js`, adiciona o *Secret* **`GH_TOKEN`** = o token,
+   e faz *Deploy*.
+3. Cola o URL do Worker em **`assets/trigger-config.js`** (`TRIONDA_TRIGGER_URL`).
+
+A partir daí, clicar na bola: dispara a Action → a bola roda enquanto a recolha
+corre → assim que o `data.json` muda, o site mostra o resultado.
+(A Action já tem `workflow_dispatch` e escreve no `main`.)
+
 ## Correr localmente
 
 ```bash
