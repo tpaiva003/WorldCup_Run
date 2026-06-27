@@ -1,6 +1,6 @@
 {
   "isSample": false,
-  "generatedAt": "2026-06-27T10:03:58.159Z",
+  "generatedAt": "2026-06-27T10:25:06.577Z",
   "competition": {
     "name": "FIFA World Cup 2026",
     "startDate": "2026-06-11"
@@ -54,10 +54,10 @@
     {
       "id": "daniel",
       "name": "Tiago",
-      "km": 58.18,
+      "km": 66.28,
       "required": 196,
-      "remaining": 137.82,
-      "progress": 0.29683673469387756,
+      "remaining": 129.72,
+      "progress": 0.33816326530612245,
       "status": "ok",
       "stats": {
         "longestRun": 11.8,
@@ -65,6 +65,10 @@
         "restStreak": 3
       },
       "runs": [
+        {
+          "date": "2026-06-27",
+          "km": 8.1
+        },
         {
           "date": "2026-06-26",
           "km": 3.4
