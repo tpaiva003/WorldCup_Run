@@ -1,6 +1,6 @@
 {
   "isSample": false,
-  "generatedAt": "2026-07-06T22:44:35.370Z",
+  "generatedAt": "2026-07-07T00:04:46.480Z",
   "competition": {
     "name": "FIFA World Cup 2026",
     "startDate": "2026-06-11"
@@ -11,7 +11,7 @@
   },
   "goals": {
     "total": 270,
-    "matchesPlayed": 93,
+    "matchesPlayed": 94,
     "firstGoalDate": "2026-06-11T19:00Z"
   },
   "runners": [
