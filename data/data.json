@@ -1,6 +1,6 @@
 {
   "isSample": false,
-  "generatedAt": "2026-07-10T20:48:45.168Z",
+  "generatedAt": "2026-07-10T21:58:29.586Z",
   "competition": {
     "name": "FIFA World Cup 2026",
     "startDate": "2026-06-11"
@@ -10,7 +10,7 @@
     "kmPerGoal": 1
   },
   "goals": {
-    "total": 284,
+    "total": 285,
     "matchesPlayed": 98,
     "firstGoalDate": "2026-06-11T19:00Z"
   },
@@ -19,9 +19,9 @@
       "id": "jose",
       "name": "José",
       "km": 85.07,
-      "required": 284,
-      "remaining": 198.93,
-      "progress": 0.29954225352112673,
+      "required": 285,
+      "remaining": 199.93,
+      "progress": 0.2984912280701754,
       "status": "ok",
       "stats": {
         "longestRun": 14.04,
@@ -71,9 +71,9 @@
       "id": "daniel",
       "name": "Tiago",
       "km": 79.88,
-      "required": 284,
-      "remaining": 204.12,
-      "progress": 0.2812676056338028,
+      "required": 285,
+      "remaining": 205.12,
+      "progress": 0.28028070175438596,
       "status": "ok",
       "stats": {
         "longestRun": 13.6,
