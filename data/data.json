@@ -1,6 +1,6 @@
 {
   "isSample": false,
-  "generatedAt": "2026-06-15T18:23:21.204Z",
+  "generatedAt": "2026-07-27T08:31:29.726Z",
   "competition": {
     "name": "FIFA World Cup 2026",
     "startDate": "2026-06-11"
@@ -10,25 +10,81 @@
     "kmPerGoal": 1
   },
   "goals": {
-    "total": 38,
-    "matchesPlayed": 13,
+    "total": 308,
+    "matchesPlayed": 104,
     "firstGoalDate": "2026-06-11T19:00Z"
   },
   "runners": [
     {
       "id": "jose",
       "name": "José",
-      "km": 14,
-      "required": 38,
-      "remaining": 24,
-      "progress": 0.3684210526315789,
+      "km": 141.56,
+      "required": 308,
+      "remaining": 166.44,
+      "progress": 0.45961038961038964,
       "status": "ok",
       "stats": {
-        "longestRun": 10,
+        "longestRun": 14.04,
         "runStreak": 2,
-        "restStreak": 2
+        "restStreak": 5
       },
       "runs": [
+        {
+          "date": "2026-07-25",
+          "km": 6.43
+        },
+        {
+          "date": "2026-07-24",
+          "km": 5.64
+        },
+        {
+          "date": "2026-07-20",
+          "km": 6.03
+        },
+        {
+          "date": "2026-07-18",
+          "km": 14.02
+        },
+        {
+          "date": "2026-07-14",
+          "km": 6.03
+        },
+        {
+          "date": "2026-07-11",
+          "km": 7.75
+        },
+        {
+          "date": "2026-07-10",
+          "km": 4.25
+        },
+        {
+          "date": "2026-07-08",
+          "km": 6.34
+        },
+        {
+          "date": "2026-07-05",
+          "km": 14.04
+        },
+        {
+          "date": "2026-07-02",
+          "km": 10.72
+        },
+        {
+          "date": "2026-06-30",
+          "km": 6.04
+        },
+        {
+          "date": "2026-06-27",
+          "km": 14.04
+        },
+        {
+          "date": "2026-06-21",
+          "km": 12.06
+        },
+        {
+          "date": "2026-06-16",
+          "km": 7.05
+        },
         {
           "date": "2026-06-14",
           "km": 10
@@ -36,23 +92,71 @@
         {
           "date": "2026-06-13",
           "km": 4
+        },
+        {
+          "date": "0202-06-22",
+          "km": 7.12
         }
       ]
     },
     {
       "id": "daniel",
       "name": "Tiago",
-      "km": 15.8,
-      "required": 38,
-      "remaining": 22.2,
-      "progress": 0.41578947368421054,
+      "km": 105.44,
+      "required": 308,
+      "remaining": 202.56,
+      "progress": 0.34233766233766233,
       "status": "ok",
       "stats": {
-        "longestRun": 10,
-        "runStreak": 2,
-        "restStreak": 3
+        "longestRun": 13.6,
+        "runStreak": 3,
+        "restStreak": 7
       },
       "runs": [
+        {
+          "date": "2026-07-26",
+          "km": 4
+        },
+        {
+          "date": "2026-07-18",
+          "km": 13.24
+        },
+        {
+          "date": "2026-07-13",
+          "km": 8.32
+        },
+        {
+          "date": "2026-07-05",
+          "km": 13.6
+        },
+        {
+          "date": "2026-06-27",
+          "km": 8.1
+        },
+        {
+          "date": "2026-06-26",
+          "km": 3.4
+        },
+        {
+          "date": "2026-06-25",
+          "km": 6.1
+        },
+        {
+          "date": "2026-06-22",
+          "km": 6.98
+        },
+        {
+          "date": "2026-06-20",
+          "km": 8.2
+        },
+        {
+          "date": "2026-06-18",
+          "km": 11.8
+        },
+        {
+          "date": "2026-06-16",
+          "km": 5.9
+        },
         {
           "date": "2026-06-15",
           "km": 5.8
