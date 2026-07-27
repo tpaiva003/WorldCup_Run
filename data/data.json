@@ -1,6 +1,6 @@
 {
   "isSample": false,
-  "generatedAt": "2026-07-26T23:57:13.102Z",
+  "generatedAt": "2026-07-27T03:19:47.602Z",
   "competition": {
     "name": "FIFA World Cup 2026",
     "startDate": "2026-06-11"
@@ -26,7 +26,7 @@
       "stats": {
         "longestRun": 14.04,
         "runStreak": 2,
-        "restStreak": 8
+        "restStreak": 9
       },
       "runs": [
         {
@@ -98,7 +98,7 @@
       "stats": {
         "longestRun": 13.6,
         "runStreak": 3,
-        "restStreak": 8
+        "restStreak": 9
       },
       "runs": [
         {
