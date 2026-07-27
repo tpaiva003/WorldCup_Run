@@ -288,7 +288,19 @@ b {
   font-size: 12px;
   letter-spacing: 0.22em;
   color: var(--muted);
-  margin-bottom: 26px;
+  margin-bottom: 16px;
+}
+
+.record {
+  display: inline-block;
+  font-size: 10.5px;
+  letter-spacing: 0.13em;
+  color: #e7c04b;
+  background: rgba(232, 184, 75, 0.06);
+  border: 1px solid rgba(232, 184, 75, 0.32);
+  border-radius: 100px;
+  padding: 6px 13px;
+  margin-bottom: 28px;
 }
 
 .display {
