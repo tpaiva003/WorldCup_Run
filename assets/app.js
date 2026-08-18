@@ -65,6 +65,10 @@ const I18N = {
     run: "Corrida",
     goalsWord: "golos",
     refresh: "Atualizar dados",
+    weeklyKm: "KM POR SEMANA",
+    cumulativeKm: "ACUMULADO",
+    weekOf: "semana de",
+    goalWord: "meta",
   },
   en: {
     introEyebrow: "FIFA WORLD CUP 2026 · HIGHEST-SCORING EVER",
@@ -112,6 +116,10 @@ const I18N = {
     run: "Run",
     goalsWord: "goals",
     refresh: "Refresh data",
+    weeklyKm: "KM PER WEEK",
+    cumulativeKm: "CUMULATIVE",
+    weekOf: "week of",
+    goalWord: "goal",
   },
 };
 
@@ -200,6 +208,152 @@ function animateNumber(el, to, { decimals = 0, duration = 1200 } = {}) {
   requestAnimationFrame(tick);
 }
 
+/* ---------- gráficos (km semanais + acumulado) ---------- */
+
+function parseRunDate(s) {
+  const m = /^(\d{4})-(\d{2})-(\d{2})/.exec(String(s || ""));
+  if (!m) return null;
+  const y = +m[1];
+  if (y < 2026 || y > 2027) return null; // ignora datas erradas (ex.: 0202)
+  const ms = Date.parse(m[0] + "T00:00:00Z");
+  return Number.isNaN(ms) ? null : ms;
+}
+
+function fmtDM(d) {
+  return (
+    String(d.getUTCDate()).padStart(2, "0") +
+    "/" +
+    String(d.getUTCMonth() + 1).padStart(2, "0")
+  );
+}
+
+// Agrega as corridas em semanas (desde o início do mundial) e devolve
+// escalas partilhadas para os dois atletas ficarem comparáveis.
+function computeWeekly(data) {
+  const WEEK = 7 * 864e5;
+  const startMs = Date.parse(
+    (data.competition?.startDate || "2026-06-11") + "T00:00:00Z"
+  );
+  const buckets = {};
+  let maxWk = -1;
+  (data.runners || []).forEach((r) => {
+    const b = {};
+    (r.runs || []).forEach((run) => {
+      const ms = parseRunDate(run.date);
+      if (ms == null || ms < startMs) return;
+      const wk = Math.floor((ms - startMs) / WEEK);
+      if (wk < 0 || wk > 40) return;
+      b[wk] = (b[wk] || 0) + (Number(run.km) || 0);
+      if (wk > maxWk) maxWk = wk;
+    });
+    buckets[r.id] = b;
+  });
+  const weeksCount = maxWk + 1;
+
+  let barMax = 0;
+  const series = {};
+  (data.runners || []).forEach((r) => {
+    const weekly = [];
+    const cumulative = [];
+    let cum = 0;
+    for (let w = 0; w < weeksCount; w++) {
+      const km = Math.round((buckets[r.id][w] || 0) * 100) / 100;
+      weekly.push(km);
+      cum = Math.round((cum + km) * 100) / 100;
+      cumulative.push(cum);
+      if (km > barMax) barMax = km;
+    }
+    series[r.id] = { weekly, cumulative, total: cumulative[weeksCount - 1] || 0 };
+  });
+
+  const weekStarts = [];
+  for (let w = 0; w < weeksCount; w++) {
+    weekStarts.push(new Date(startMs + w * WEEK));
+  }
+  const goal =
+    data.runners?.[0]?.required || data.goals?.total || 1;
+  return { weeksCount, weekStarts, barMax: barMax || 1, goal: goal || 1, series };
+}
+
+const CH = { W: 360, H: 78, PL: 8, PR: 8, PT: 8, PB: 20 };
+
+function svgWeekly(id, p) {
+  const { W, H, PL, PR, PT, PB } = CH;
+  const plotW = W - PL - PR;
+  const plotH = H - PT - PB;
+  const baseY = PT + plotH;
+  const n = p.weeksCount;
+  const slot = plotW / n;
+  const bw = Math.min(slot * 0.6, 30);
+  const wk = p.series[id].weekly;
+  let bars = "";
+  for (let w = 0; w < n; w++) {
+    const cx = PL + slot * (w + 0.5);
+    const h = Math.max(0, (wk[w] / p.barMax) * plotH);
+    const tip = `${t("weekOf")} ${fmtDM(p.weekStarts[w])} · ${nf1.format(wk[w])} km`;
+    bars += `<rect x="${(cx - bw / 2).toFixed(1)}" y="${(baseY - h).toFixed(
+      1
+    )}" width="${bw.toFixed(1)}" height="${h.toFixed(
+      1
+    )}" rx="2" class="c-bar"><title>${tip}</title></rect>`;
+  }
+  const base = `<line x1="${PL}" y1="${baseY}" x2="${W - PR}" y2="${baseY}" class="c-axis"/>`;
+  const x0 = `<text x="${PL}" y="${H - 6}" class="c-xlab" text-anchor="start">${fmtDM(
+    p.weekStarts[0]
+  )}</text>`;
+  const x1 =
+    n > 1
+      ? `<text x="${W - PR}" y="${H - 6}" class="c-xlab" text-anchor="end">${fmtDM(
+          p.weekStarts[n - 1]
+        )}</text>`
+      : "";
+  return `<svg viewBox="0 0 ${W} ${H}" class="c-svg" role="img" aria-label="${t(
+    "weeklyKm"
+  )}">${base}${bars}${x0}${x1}</svg>`;
+}
+
+function svgCumulative(id, p) {
+  const { W, H, PL, PR, PT, PB } = CH;
+  const plotW = W - PL - PR;
+  const plotH = H - PT - PB;
+  const baseY = PT + plotH;
+  const n = p.weeksCount;
+  const slot = plotW / n;
+  const cum = p.series[id].cumulative;
+  const X = (w) => PL + slot * (w + 0.5);
+  const Y = (v) => baseY - Math.min(1, v / p.goal) * plotH;
+  const pts = [];
+  for (let w = 0; w < n; w++) pts.push([X(w), Y(cum[w])]);
+  const line = pts
+    .map((q, i) => `${i ? "L" : "M"}${q[0].toFixed(1)},${q[1].toFixed(1)}`)
+    .join(" ");
+  const area =
+    `M${pts[0][0].toFixed(1)},${baseY} ` +
+    pts.map((q) => `L${q[0].toFixed(1)},${q[1].toFixed(1)}`).join(" ") +
+    ` L${pts[n - 1][0].toFixed(1)},${baseY} Z`;
+  const goalLine = `<line x1="${PL}" y1="${PT}" x2="${W - PR}" y2="${PT}" class="c-goal"/>`;
+  const goalLab = `<text x="${W - PR}" y="${PT - 2}" class="c-glab" text-anchor="end">${nf.format(
+    Math.round(p.goal)
+  )} ${t("goalWord")}</text>`;
+  const base = `<line x1="${PL}" y1="${baseY}" x2="${W - PR}" y2="${baseY}" class="c-axis"/>`;
+  let dots = "";
+  for (let w = 0; w < n; w++) {
+    const tip = `${fmtDM(p.weekStarts[w])} · ${nf1.format(cum[w])} km`;
+    dots += `<circle cx="${X(w).toFixed(1)}" cy="${Y(cum[w]).toFixed(
+      1
+    )}" r="2.3" class="c-dot"><title>${tip}</title></circle>`;
+  }
+  const last = pts[n - 1];
+  const tot = `<text x="${Math.min(last[0], W - PR - 12).toFixed(1)}" y="${(
+    last[1] - 5
+  ).toFixed(1)}" class="c-tot" text-anchor="middle">${nf1.format(
+    cum[n - 1]
+  )}</text>`;
+  return `<svg viewBox="0 0 ${W} ${H}" class="c-svg" role="img" aria-label="${t(
+    "cumulativeKm"
+  )}"><path d="${area}" class="c-area"/>${goalLine}${goalLab}${base}<path d="${line}" class="c-line"/>${dots}${tot}</svg>`;
+}
+
 /* ---------- render ---------- */
 
 function renderRunners(data) {
@@ -218,6 +372,8 @@ function renderRunners(data) {
   const existing = new Map(
     [...wrap.children].map((el) => [el.dataset.id, el])
   );
+
+  const chart = computeWeekly(data); // escalas partilhadas entre atletas
 
   data.runners.forEach((r) => {
     let card = existing.get(r.id);
@@ -297,6 +453,15 @@ function renderRunners(data) {
     $(".stat-reststreak", card).textContent = pending
       ? "—"
       : nf.format(stats.restStreak || 0);
+
+    // gráficos: km semanais (barras) + acumulado (linha)
+    const charts = $(".runner-charts", card);
+    const hasData = chart.weeksCount > 0 && (chart.series[r.id]?.total || 0) > 0;
+    charts.hidden = !hasData;
+    if (hasData) {
+      $(".chart-weekly", card).innerHTML = svgWeekly(r.id, chart);
+      $(".chart-cumulative", card).innerHTML = svgCumulative(r.id, chart);
+    }
   });
 
   // remove cartões que já não existam na config

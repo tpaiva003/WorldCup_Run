@@ -681,6 +681,80 @@ b {
   color: var(--muted-2);
 }
 
+/* Gráficos por atleta (km semanais + acumulado) */
+.runner-charts {
+  margin-top: 20px;
+  padding-top: 16px;
+  border-top: 1px solid var(--border-soft);
+  display: grid;
+  gap: 14px;
+}
+.runner-charts[hidden] {
+  display: none;
+}
+.mini-title {
+  display: block;
+  font-size: 9px;
+  letter-spacing: 0.16em;
+  color: var(--muted-2);
+  margin-bottom: 6px;
+}
+.c-svg {
+  display: block;
+  width: 100%;
+  height: auto;
+  overflow: visible;
+}
+.c-bar {
+  fill: var(--accent);
+  fill-opacity: 0.5;
+  transition: fill-opacity 0.2s var(--ease);
+}
+.c-bar:hover {
+  fill-opacity: 0.85;
+}
+.c-axis {
+  stroke: var(--border);
+  stroke-width: 1;
+}
+.c-xlab {
+  fill: var(--muted-2);
+  font-family: var(--font-mono);
+  font-size: 8px;
+  letter-spacing: 0.03em;
+}
+.c-goal {
+  stroke: rgba(231, 192, 75, 0.4);
+  stroke-width: 1;
+  stroke-dasharray: 3 3;
+}
+.c-glab {
+  fill: #e7c04b;
+  font-family: var(--font-mono);
+  font-size: 8px;
+  letter-spacing: 0.06em;
+}
+.c-area {
+  fill: var(--accent);
+  fill-opacity: 0.1;
+}
+.c-line {
+  fill: none;
+  stroke: var(--accent);
+  stroke-width: 2;
+  stroke-linejoin: round;
+  stroke-linecap: round;
+}
+.c-dot {
+  fill: var(--accent);
+}
+.c-tot {
+  fill: var(--text);
+  font-family: var(--font-display);
+  font-size: 9px;
+  font-weight: 600;
+}
+
 /* ---------- Statusbar ---------- */
 
 .statusbar {
