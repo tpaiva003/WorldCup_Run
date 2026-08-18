@@ -703,6 +703,8 @@ b {
   display: block;
   width: 100%;
   height: auto;
+  /* iOS Safari não infere a altura de um SVG por height:auto — fixa o rácio. */
+  aspect-ratio: 360 / 78;
   overflow: visible;
 }
 .c-bar {
