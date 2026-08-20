@@ -227,13 +227,21 @@ function fmtDM(d) {
   );
 }
 
+// Intervalo da semana: "DD/MM–DD/MM" (2ª a domingo).
+function weekRange(mon) {
+  return `${fmtDM(mon)}–${fmtDM(new Date(mon.getTime() + 6 * 864e5))}`;
+}
+
 // Agrega as corridas em semanas (desde o início do mundial) e devolve
 // escalas partilhadas para os dois atletas ficarem comparáveis.
 function computeWeekly(data) {
   const WEEK = 7 * 864e5;
-  const startMs = Date.parse(
+  const startRaw = Date.parse(
     (data.competition?.startDate || "2026-06-11") + "T00:00:00Z"
   );
+  // A semana vai de 2ª feira a domingo: ancora na 2ª da semana do arranque.
+  const dow = (new Date(startRaw).getUTCDay() + 6) % 7; // 2ª=0 … dom=6
+  const startMs = startRaw - dow * 864e5;
   const buckets = {};
   let maxWk = -1;
   (data.runners || []).forEach((r) => {
