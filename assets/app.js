@@ -1,5 +1,5 @@
 /* ============================================================
-   UM GOLO · UM KM — lógica do painel
+   UM GOLO · UM KM – lógica do painel
    - lê data/data.json (gerado pelo GitHub Action)
    - anima os contadores e barras de progresso
    - atualiza sozinho de X em X minutos
@@ -23,7 +23,7 @@ const I18N = {
     introEyebrow: "FIFA WORLD CUP 2026 · RECORDE DE GOLOS DE SEMPRE",
     introTitle: "O Mundial acabou.<br />O desafio, não.",
     introSub:
-      "O Mundial mais marcado de sempre deu-nos a meta — e o mês em que mais corremos na vida. Faltou pouco. Agora é terminar, ao nosso ritmo.",
+      "O Mundial mais marcado de sempre deu-nos a meta e o mês em que mais corremos na vida. Faltou pouco. Agora é terminar, ao nosso ritmo.",
     enter: "ENTRAR",
     introHint: "🔊 liga o som antes de entrar",
     heroEyebrow: "FIFA WORLD CUP 2026 · O DESAFIO CONTINUA",
@@ -74,7 +74,7 @@ const I18N = {
     introEyebrow: "FIFA WORLD CUP 2026 · HIGHEST-SCORING EVER",
     introTitle: "The World Cup is over.<br />The challenge isn't.",
     introSub:
-      "The highest-scoring World Cup ever gave us the target — and the month we ran the most in our lives. We came close. Now we finish, at our own pace.",
+      "The highest-scoring World Cup ever gave us the target and the month we ran the most in our lives. We came close. Now we finish, at our own pace.",
     enter: "ENTER",
     introHint: "🔊 turn your sound on before entering",
     heroEyebrow: "FIFA WORLD CUP 2026 · THE CHALLENGE CONTINUES",
@@ -166,9 +166,9 @@ applyStaticI18n(); // aplica logo (intro/hero, antes de os dados chegarem)
 /* ---------- utilidades ---------- */
 
 function formatDate(iso, withTime = false) {
-  if (!iso) return "—";
+  if (!iso) return "–";
   const d = new Date(iso);
-  if (Number.isNaN(d.getTime())) return "—";
+  if (Number.isNaN(d.getTime())) return "–";
   const opts = withTime
     ? { day: "2-digit", month: "short", hour: "2-digit", minute: "2-digit" }
     : { day: "2-digit", month: "short", year: "numeric" };
@@ -176,9 +176,9 @@ function formatDate(iso, withTime = false) {
 }
 
 function relativeTime(iso) {
-  if (!iso) return "—";
+  if (!iso) return "–";
   const diff = Date.now() - new Date(iso).getTime();
-  if (Number.isNaN(diff)) return "—";
+  if (Number.isNaN(diff)) return "–";
   const min = Math.round(diff / 60000);
   if (min < 1) return t("justNow");
   if (min < 60) return t("minAgo").replace("{n}", min);
@@ -295,15 +295,17 @@ function svgWeekly(id, p) {
   const bw = Math.min(slot * 0.6, 30);
   const wk = p.series[id].weekly;
   let bars = "";
+  let hits = "";
   for (let w = 0; w < n; w++) {
     const cx = PL + slot * (w + 0.5);
     const h = Math.max(0, (wk[w] / p.barMax) * plotH);
-    const tip = `${t("weekOf")} ${fmtDM(p.weekStarts[w])} · ${nf1.format(wk[w])} km`;
     bars += `<rect x="${(cx - bw / 2).toFixed(1)}" y="${(baseY - h).toFixed(
       1
-    )}" width="${bw.toFixed(1)}" height="${h.toFixed(
+    )}" width="${bw.toFixed(1)}" height="${h.toFixed(1)}" rx="2" class="c-bar"/>`;
+    const tip = `${weekRange(p.weekStarts[w])} · ${nf1.format(wk[w])} km`;
+    hits += `<rect x="${(PL + slot * w).toFixed(1)}" y="${PT}" width="${slot.toFixed(
       1
-    )}" rx="2" class="c-bar"><title>${tip}</title></rect>`;
+    )}" height="${plotH}" class="c-hit" data-tip="${tip}"/>`;
   }
   const base = `<line x1="${PL}" y1="${baseY}" x2="${W - PR}" y2="${baseY}" class="c-axis"/>`;
   const x0 = `<text x="${PL}" y="${H - 6}" class="c-xlab" text-anchor="start">${fmtDM(
@@ -317,7 +319,7 @@ function svgWeekly(id, p) {
       : "";
   return `<svg viewBox="0 0 ${W} ${H}" class="c-svg" role="img" aria-label="${t(
     "weeklyKm"
-  )}">${base}${bars}${x0}${x1}</svg>`;
+  )}">${base}${bars}${x0}${x1}${hits}</svg>`;
 }
 
 function svgCumulative(id, p) {
@@ -345,11 +347,17 @@ function svgCumulative(id, p) {
   )} ${t("goalWord")}</text>`;
   const base = `<line x1="${PL}" y1="${baseY}" x2="${W - PR}" y2="${baseY}" class="c-axis"/>`;
   let dots = "";
+  let hits = "";
   for (let w = 0; w < n; w++) {
-    const tip = `${fmtDM(p.weekStarts[w])} · ${nf1.format(cum[w])} km`;
     dots += `<circle cx="${X(w).toFixed(1)}" cy="${Y(cum[w]).toFixed(
       1
-    )}" r="2.3" class="c-dot"><title>${tip}</title></circle>`;
+    )}" r="2.3" class="c-dot"/>`;
+    const tip = `${weekRange(p.weekStarts[w])} · ${t("cumulative")} ${nf1.format(
+      cum[w]
+    )} km`;
+    hits += `<rect x="${(PL + slot * w).toFixed(1)}" y="${PT}" width="${slot.toFixed(
+      1
+    )}" height="${plotH}" class="c-hit" data-tip="${tip}"/>`;
   }
   const last = pts[n - 1];
   const tot = `<text x="${Math.min(last[0], W - PR - 12).toFixed(1)}" y="${(
@@ -359,8 +367,52 @@ function svgCumulative(id, p) {
   )}</text>`;
   return `<svg viewBox="0 0 ${W} ${H}" class="c-svg" role="img" aria-label="${t(
     "cumulativeKm"
-  )}"><path d="${area}" class="c-area"/>${goalLine}${goalLab}${base}<path d="${line}" class="c-line"/>${dots}${tot}</svg>`;
+  )}"><path d="${area}" class="c-area"/>${goalLine}${goalLab}${base}<path d="${line}" class="c-line"/>${dots}${tot}${hits}</svg>`;
 }
+
+// Tooltip flutuante para os gráficos (rato e toque).
+const chartTip = (() => {
+  const el = document.createElement("div");
+  el.className = "chart-tip";
+  el.hidden = true;
+  document.body.appendChild(el);
+  return el;
+})();
+function placeChartTip(x, y) {
+  const pad = 10;
+  let lx = x + 14;
+  let ly = y - chartTip.offsetHeight - 12;
+  if (lx + chartTip.offsetWidth > window.innerWidth - pad) {
+    lx = x - chartTip.offsetWidth - 14;
+  }
+  if (ly < pad) ly = y + 16;
+  chartTip.style.left = lx + "px";
+  chartTip.style.top = ly + "px";
+}
+function showChartTip(hit, x, y) {
+  chartTip.textContent = hit.getAttribute("data-tip") || "";
+  chartTip.hidden = false;
+  placeChartTip(x, y);
+}
+(function initChartTip() {
+  const host = $("#runners");
+  if (!host) return;
+  let hideTimer;
+  host.addEventListener("pointermove", (e) => {
+    clearTimeout(hideTimer);
+    const hit = e.target.closest && e.target.closest(".c-hit");
+    if (hit) showChartTip(hit, e.clientX, e.clientY);
+    else chartTip.hidden = true;
+  });
+  host.addEventListener("pointerdown", (e) => {
+    const hit = e.target.closest && e.target.closest(".c-hit");
+    if (!hit) return;
+    showChartTip(hit, e.clientX, e.clientY);
+    clearTimeout(hideTimer);
+    hideTimer = setTimeout(() => (chartTip.hidden = true), 2500);
+  });
+  host.addEventListener("pointerleave", () => (chartTip.hidden = true));
+})();
 
 /* ---------- render ---------- */
 
@@ -417,7 +469,7 @@ function renderRunners(data) {
 
     const kmNum = $(".km-num", card);
     if (pending) {
-      kmNum.textContent = "—";
+      kmNum.textContent = "–";
       kmNum.dataset.count = "0";
     } else {
       animateNumber(kmNum, r.km, { decimals: 1 });
@@ -436,15 +488,15 @@ function renderRunners(data) {
 
     $(".meta-required", card).textContent = required
       ? `${nf.format(required)} km`
-      : "—";
+      : "–";
     const remEl = $(".meta-remaining", card);
     const remLabel = $(".meta-remaining-wrap", card).lastChild; // nó de texto
     if (pending) {
-      remEl.textContent = "—";
+      remEl.textContent = "–";
       remLabel.textContent = " " + t("toGo");
     } else if (done) {
       remEl.textContent = "0 km";
-      remLabel.textContent = " — " + t("done");
+      remLabel.textContent = " · " + t("done");
     } else {
       remEl.textContent = `${nf1.format(remaining)} km`;
       remLabel.textContent = " " + t("toGo");
@@ -453,13 +505,13 @@ function renderRunners(data) {
     // estatísticas
     const stats = r.stats || {};
     $(".stat-longest", card).textContent = pending
-      ? "—"
+      ? "–"
       : `${nf1.format(stats.longestRun || 0)} km`;
     $(".stat-runstreak", card).textContent = pending
-      ? "—"
+      ? "–"
       : nf.format(stats.runStreak || 0);
     $(".stat-reststreak", card).textContent = pending
-      ? "—"
+      ? "–"
       : nf.format(stats.restStreak || 0);
 
     // gráficos: km semanais (barras) + acumulado (linha)
@@ -481,7 +533,7 @@ function render(data) {
   animateNumber($("#goals"), data.goals?.total ?? 0, { decimals: 0 });
   $("#firstGoal").textContent = data.goals?.firstGoalDate
     ? formatDate(data.goals.firstGoalDate, true)
-    : "—";
+    : "–";
   $("#updated").textContent = relativeTime(data.generatedAt);
   $("#updated").title = formatDate(data.generatedAt, true);
   $("#matches").textContent = nf.format(data.goals?.matchesPlayed ?? 0);
@@ -531,7 +583,7 @@ function openModal(id) {
   const runs = Array.isArray(r.runs) ? r.runs : [];
 
   $("#modalName").textContent = r.name;
-  $("#modalKm").textContent = typeof r.km === "number" ? nf1.format(r.km) : "—";
+  $("#modalKm").textContent = typeof r.km === "number" ? nf1.format(r.km) : "–";
   $("#modalRuns").textContent = nf.format(runs.length);
 
   const body = $("#runsBody");
@@ -593,7 +645,7 @@ document.querySelectorAll("img[data-optional]").forEach((img) => {
 
 /* ---------- música (ficheiro próprio + arranque ao 1.º gesto) ---------- */
 // Nenhum browser deixa tocar som ANTES de o utilizador interagir, por isso
-// arrancamos no primeiro gesto (clique/tecla/toque) — o mais perto de autoplay.
+// arrancamos no primeiro gesto (clique/tecla/toque) – o mais perto de autoplay.
 
 const anthem = $("#anthem");
 const musicBtn = $("#musicToggle");
