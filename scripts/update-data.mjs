@@ -62,6 +62,7 @@ async function fetchGoals(competition) {
   let total = 0;
   let matchesPlayed = 0;
   let firstGoalDate = null;
+  const byDate = {}; // golos por dia (YYYY-MM-DD), para os gráficos semanais
 
   for (let d = new Date(start); d <= last; d.setUTCDate(d.getUTCDate() + 1)) {
     const day = ymd(d);
@@ -84,8 +85,9 @@ async function fetchGoals(competition) {
       );
       matchesPlayed += 1;
       total += goalsInMatch;
-      if (goalsInMatch > 0 && ev.date) {
-        if (!firstGoalDate || new Date(ev.date) < new Date(firstGoalDate)) {
+      if (goalsInMatch > 0) {
+        byDate[ymdDash(d)] = (byDate[ymdDash(d)] || 0) + goalsInMatch;
+        if (ev.date && (!firstGoalDate || new Date(ev.date) < new Date(firstGoalDate))) {
           firstGoalDate = ev.date;
         }
       }
@@ -93,7 +95,7 @@ async function fetchGoals(competition) {
     await new Promise((r) => setTimeout(r, 120)); // simpático para a API
   }
 
-  return { total, matchesPlayed, firstGoalDate };
+  return { total, matchesPlayed, firstGoalDate, byDate };
 }
 
 /* ------------------------------------------------------------------ */

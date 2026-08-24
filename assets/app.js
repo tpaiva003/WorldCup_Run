@@ -69,6 +69,9 @@ const I18N = {
     cumulativeKm: "ACUMULADO",
     weekOf: "semana de",
     goalWord: "meta",
+    cumulative: "acum.",
+    legendKm: "km corridos",
+    legendGoals: "golos do Mundial",
   },
   en: {
     introEyebrow: "FIFA WORLD CUP 2026 · HIGHEST-SCORING EVER",
@@ -120,6 +123,9 @@ const I18N = {
     cumulativeKm: "CUMULATIVE",
     weekOf: "week of",
     goalWord: "goal",
+    cumulative: "cum.",
+    legendKm: "km run",
+    legendGoals: "World Cup goals",
   },
 };
 
@@ -278,9 +284,38 @@ function computeWeekly(data) {
   for (let w = 0; w < weeksCount; w++) {
     weekStarts.push(new Date(startMs + w * WEEK));
   }
-  const goal =
-    data.runners?.[0]?.required || data.goals?.total || 1;
-  return { weeksCount, weekStarts, barMax: barMax || 1, goal: goal || 1, series };
+  const goal = data.runners?.[0]?.required || data.goals?.total || 1;
+
+  // Golos por semana (mesma âncora). Como 1 golo = 1 km, partilham a escala.
+  const goalsWeekly = new Array(weeksCount).fill(0);
+  const byDate = data.goals?.byDate || {};
+  for (const key in byDate) {
+    const ms = parseRunDate(key);
+    if (ms == null || ms < startMs) continue;
+    const wk = Math.floor((ms - startMs) / WEEK);
+    if (wk >= 0 && wk < weeksCount) goalsWeekly[wk] += Number(byDate[key]) || 0;
+  }
+  let gc = 0;
+  let maxGoalsWeekly = 0;
+  const goalsCumulative = [];
+  for (let w = 0; w < weeksCount; w++) {
+    gc += goalsWeekly[w];
+    goalsCumulative.push(gc);
+    if (goalsWeekly[w] > maxGoalsWeekly) maxGoalsWeekly = goalsWeekly[w];
+  }
+  const hasGoals = gc > 0;
+  const weeklyMax = Math.max(barMax || 1, maxGoalsWeekly) || 1;
+
+  return {
+    weeksCount,
+    weekStarts,
+    barMax: weeklyMax,
+    goal: goal || 1,
+    series,
+    goalsWeekly,
+    goalsCumulative,
+    hasGoals,
+  };
 }
 
 const CH = { W: 360, H: 78, PL: 8, PR: 8, PT: 8, PB: 20 };
@@ -294,20 +329,44 @@ function svgWeekly(id, p) {
   const slot = plotW / n;
   const bw = Math.min(slot * 0.6, 30);
   const wk = p.series[id].weekly;
+  const gw = p.goalsWeekly || [];
+  const Xc = (w) => PL + slot * (w + 0.5);
+  const Yv = (v) => baseY - Math.min(1, v / p.barMax) * plotH;
   let bars = "";
   let hits = "";
   for (let w = 0; w < n; w++) {
-    const cx = PL + slot * (w + 0.5);
+    const cx = Xc(w);
     const h = Math.max(0, (wk[w] / p.barMax) * plotH);
     bars += `<rect x="${(cx - bw / 2).toFixed(1)}" y="${(baseY - h).toFixed(
       1
     )}" width="${bw.toFixed(1)}" height="${h.toFixed(
       1
     )}" rx="2" class="c-bar" style="transition-delay:${w * 40}ms"/>`;
-    const tip = `${weekRange(p.weekStarts[w])} · ${nf1.format(wk[w])} km`;
+    const tip =
+      `${weekRange(p.weekStarts[w])} · ${nf1.format(wk[w])} km` +
+      (p.hasGoals ? ` · ${nf.format(gw[w] || 0)} ${t("goalsWord")}` : "");
     hits += `<rect x="${(PL + slot * w).toFixed(1)}" y="${PT}" width="${slot.toFixed(
       1
     )}" height="${plotH}" class="c-hit" data-tip="${tip}"/>`;
+  }
+  // linha de golos por semana (mesma escala: 1 golo = 1 km)
+  let gline = "";
+  let gdots = "";
+  if (p.hasGoals) {
+    const pts = [];
+    for (let w = 0; w < n; w++) pts.push([Xc(w), Yv(gw[w] || 0)]);
+    const gd = pts
+      .map((q, i) => `${i ? "L" : "M"}${q[0].toFixed(1)},${q[1].toFixed(1)}`)
+      .join(" ");
+    gline = `<path d="${gd}" pathLength="1" class="c-gline"/>`;
+    gdots = pts
+      .map(
+        (q) =>
+          `<circle cx="${q[0].toFixed(1)}" cy="${q[1].toFixed(
+            1
+          )}" r="1.8" class="c-gdot"/>`
+      )
+      .join("");
   }
   const base = `<line x1="${PL}" y1="${baseY}" x2="${W - PR}" y2="${baseY}" class="c-axis"/>`;
   const x0 = `<text x="${PL}" y="${H - 6}" class="c-xlab" text-anchor="start">${fmtDM(
@@ -321,7 +380,7 @@ function svgWeekly(id, p) {
       : "";
   return `<svg viewBox="0 0 ${W} ${H}" class="c-svg" role="img" aria-label="${t(
     "weeklyKm"
-  )}">${base}${bars}${x0}${x1}${hits}</svg>`;
+  )}">${base}${bars}${gline}${gdots}${x0}${x1}${hits}</svg>`;
 }
 
 function svgCumulative(id, p) {
@@ -332,6 +391,7 @@ function svgCumulative(id, p) {
   const n = p.weeksCount;
   const slot = plotW / n;
   const cum = p.series[id].cumulative;
+  const gcum = p.goalsCumulative || [];
   const X = (w) => PL + slot * (w + 0.5);
   const Y = (v) => baseY - Math.min(1, v / p.goal) * plotH;
   const pts = [];
@@ -339,6 +399,14 @@ function svgCumulative(id, p) {
   const line = pts
     .map((q, i) => `${i ? "L" : "M"}${q[0].toFixed(1)},${q[1].toFixed(1)}`)
     .join(" ");
+  // ritmo dos golos acumulados (mesma escala do km — a meta é 1 golo = 1 km)
+  let gline = "";
+  if (p.hasGoals) {
+    const gd = [];
+    for (let w = 0; w < n; w++)
+      gd.push(`${w ? "L" : "M"}${X(w).toFixed(1)},${Y(gcum[w]).toFixed(1)}`);
+    gline = `<path d="${gd.join(" ")}" pathLength="1" class="c-gline"/>`;
+  }
   const area =
     `M${pts[0][0].toFixed(1)},${baseY} ` +
     pts.map((q) => `L${q[0].toFixed(1)},${q[1].toFixed(1)}`).join(" ") +
@@ -354,9 +422,9 @@ function svgCumulative(id, p) {
     dots += `<circle cx="${X(w).toFixed(1)}" cy="${Y(cum[w]).toFixed(
       1
     )}" r="2.3" class="c-dot"/>`;
-    const tip = `${weekRange(p.weekStarts[w])} · ${t("cumulative")} ${nf1.format(
-      cum[w]
-    )} km`;
+    const tip =
+      `${weekRange(p.weekStarts[w])} · ${t("cumulative")} ${nf1.format(cum[w])} km` +
+      (p.hasGoals ? ` · ${nf.format(gcum[w] || 0)} ${t("goalsWord")}` : "");
     hits += `<rect x="${(PL + slot * w).toFixed(1)}" y="${PT}" width="${slot.toFixed(
       1
     )}" height="${plotH}" class="c-hit" data-tip="${tip}"/>`;
@@ -369,7 +437,7 @@ function svgCumulative(id, p) {
   )}</text>`;
   return `<svg viewBox="0 0 ${W} ${H}" class="c-svg" role="img" aria-label="${t(
     "cumulativeKm"
-  )}"><path d="${area}" class="c-area"/>${goalLine}${goalLab}${base}<path d="${line}" pathLength="1" class="c-line"/>${dots}${tot}${hits}</svg>`;
+  )}"><path d="${area}" class="c-area"/>${goalLine}${goalLab}${base}${gline}<path d="${line}" pathLength="1" class="c-line"/>${dots}${tot}${hits}</svg>`;
 }
 
 // Tooltip flutuante para os gráficos (rato e toque).
