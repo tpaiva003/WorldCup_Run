@@ -301,7 +301,9 @@ function svgWeekly(id, p) {
     const h = Math.max(0, (wk[w] / p.barMax) * plotH);
     bars += `<rect x="${(cx - bw / 2).toFixed(1)}" y="${(baseY - h).toFixed(
       1
-    )}" width="${bw.toFixed(1)}" height="${h.toFixed(1)}" rx="2" class="c-bar"/>`;
+    )}" width="${bw.toFixed(1)}" height="${h.toFixed(
+      1
+    )}" rx="2" class="c-bar" style="transition-delay:${w * 40}ms"/>`;
     const tip = `${weekRange(p.weekStarts[w])} · ${nf1.format(wk[w])} km`;
     hits += `<rect x="${(PL + slot * w).toFixed(1)}" y="${PT}" width="${slot.toFixed(
       1
@@ -367,7 +369,7 @@ function svgCumulative(id, p) {
   )}</text>`;
   return `<svg viewBox="0 0 ${W} ${H}" class="c-svg" role="img" aria-label="${t(
     "cumulativeKm"
-  )}"><path d="${area}" class="c-area"/>${goalLine}${goalLab}${base}<path d="${line}" class="c-line"/>${dots}${tot}${hits}</svg>`;
+  )}"><path d="${area}" class="c-area"/>${goalLine}${goalLab}${base}<path d="${line}" pathLength="1" class="c-line"/>${dots}${tot}${hits}</svg>`;
 }
 
 // Tooltip flutuante para os gráficos (rato e toque).
@@ -413,6 +415,45 @@ function showChartTip(hit, x, y) {
   });
   host.addEventListener("pointerleave", () => (chartTip.hidden = true));
 })();
+
+/* ---------- reveals ao scroll ---------- */
+
+let revealObserver = null;
+const REVEAL_SEL = ".reveal:not(.is-in), .runner:not(.is-in), .runner-charts:not(.is-in)";
+
+function observeReveals() {
+  if (REDUCED) {
+    document
+      .querySelectorAll(".reveal, .runner, .runner-charts")
+      .forEach((el) => el.classList.add("is-in"));
+    return;
+  }
+  if (!revealObserver) return; // ainda não entrámos; startReveals trata disso
+  document.querySelectorAll(REVEAL_SEL).forEach((el) => revealObserver.observe(el));
+}
+
+function startReveals() {
+  if (REDUCED) return observeReveals();
+  if (!revealObserver) {
+    revealObserver = new IntersectionObserver(
+      (entries) => {
+        for (const e of entries) {
+          if (e.isIntersecting) {
+            e.target.classList.add("is-in");
+            revealObserver.unobserve(e.target);
+          }
+        }
+      },
+      { threshold: 0.12, rootMargin: "0px 0px -6% 0px" }
+    );
+  }
+  observeReveals();
+}
+
+// Rede de segurança: se por algum motivo a entrada não disparar, revela tudo.
+setTimeout(() => {
+  if (!revealObserver) startReveals();
+}, 7000);
 
 /* ---------- render ---------- */
 
@@ -526,6 +567,8 @@ function renderRunners(data) {
 
   // remove cartões que já não existam na config
   existing.forEach((el) => el.remove());
+
+  observeReveals(); // observa cartões/gráficos novos
 }
 
 function render(data) {
@@ -700,6 +743,7 @@ function enterSite() {
   if (!intro || intro.classList.contains("is-hidden")) return;
   musicAutostarted = true;
   playAnthem(); // o clique conta como gesto -> o browser deixa tocar
+  setTimeout(startReveals, 140); // conteúdo entra em cascata ao abrir
 
   // A taça voa do ecrã de entrada para o logótipo da barra de topo.
   const trophy = $("#introTrophy");
