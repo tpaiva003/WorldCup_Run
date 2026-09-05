@@ -191,8 +191,8 @@ function ymdDash(date) {
   );
 }
 
-// Estatísticas por atleta: corrida mais longa e maiores sequências
-// (com e sem corrida), a contar desde o início do mundial.
+// Estatísticas por atleta: número de corridas registadas, corrida mais longa
+// e maiores sequências (com e sem corrida), a contar desde o início do mundial.
 function computeStats(runs, startDateStr, todayDate) {
   const longestRun = runs.reduce((mx, r) => Math.max(mx, Number(r.km) || 0), 0);
   const runDays = new Set();
@@ -218,6 +218,7 @@ function computeStats(runs, startDateStr, todayDate) {
     }
   }
   return {
+    totalRuns: runs.length,
     longestRun: Math.round(longestRun * 100) / 100,
     runStreak,
     restStreak,

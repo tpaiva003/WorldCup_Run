@@ -42,6 +42,7 @@ const I18N = {
     goal: "meta",
     toGo: "em falta",
     done: "completo ✓",
+    totalRuns: "corridas registadas",
     longestRun: "corrida + longa",
     runStreak: "dias seg. a correr",
     restStreak: "dias seg. sem correr",
@@ -96,6 +97,7 @@ const I18N = {
     goal: "goal",
     toGo: "to go",
     done: "done ✓",
+    totalRuns: "runs logged",
     longestRun: "longest run",
     runStreak: "days running in a row",
     restStreak: "days without running",
@@ -613,6 +615,13 @@ function renderRunners(data) {
 
     // estatísticas
     const stats = r.stats || {};
+    const totalRuns =
+      stats.totalRuns != null
+        ? stats.totalRuns
+        : Array.isArray(r.runs)
+          ? r.runs.length
+          : 0;
+    $(".stat-runs", card).textContent = pending ? "–" : nf.format(totalRuns);
     $(".stat-longest", card).textContent = pending
       ? "–"
       : `${nf1.format(stats.longestRun || 0)} km`;
