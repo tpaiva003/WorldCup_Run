@@ -60,9 +60,9 @@
       "progress": 0.7506168831168831,
       "status": "ok",
       "stats": {
+        "totalRuns": 28,
         "longestRun": 14.04,
-        "runStreak": 2,
-        "restStreak": 6
+        "avgRun": 8.05
       },
       "runs": [
         {
@@ -192,9 +192,9 @@
       "progress": 0.8181818181818182,
       "status": "ok",
       "stats": {
+        "totalRuns": 32,
         "longestRun": 17,
-        "runStreak": 3,
-        "restStreak": 7
+        "avgRun": 7.71
       },
       "runs": [
         {

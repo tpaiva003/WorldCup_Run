@@ -42,9 +42,9 @@ const I18N = {
     goal: "meta",
     toGo: "em falta",
     done: "completo ✓",
+    totalRuns: "corridas registadas",
+    avgRun: "média por corrida",
     longestRun: "corrida + longa",
-    runStreak: "dias seg. a correr",
-    restStreak: "dias seg. sem correr",
     runLog: "REGISTO DE CORRIDAS",
     runsCount: "corridas",
     colDate: "DATA",
@@ -96,9 +96,9 @@ const I18N = {
     goal: "goal",
     toGo: "to go",
     done: "done ✓",
+    totalRuns: "runs logged",
+    avgRun: "average run",
     longestRun: "longest run",
-    runStreak: "days running in a row",
-    restStreak: "days without running",
     runLog: "RUN LOG",
     runsCount: "runs",
     colDate: "DATE",
@@ -613,15 +613,25 @@ function renderRunners(data) {
 
     // estatísticas
     const stats = r.stats || {};
+    const totalRuns =
+      stats.totalRuns != null
+        ? stats.totalRuns
+        : Array.isArray(r.runs)
+          ? r.runs.length
+          : 0;
+    $(".stat-runs", card).textContent = pending ? "–" : nf.format(totalRuns);
     $(".stat-longest", card).textContent = pending
       ? "–"
       : `${nf1.format(stats.longestRun || 0)} km`;
-    $(".stat-runstreak", card).textContent = pending
+    const avgRun =
+      stats.avgRun != null
+        ? stats.avgRun
+        : totalRuns > 0
+          ? r.km / totalRuns
+          : 0;
+    $(".stat-avg", card).textContent = pending
       ? "–"
-      : nf.format(stats.runStreak || 0);
-    $(".stat-reststreak", card).textContent = pending
-      ? "–"
-      : nf.format(stats.restStreak || 0);
+      : `${nf1.format(avgRun)} km`;
 
     // gráficos: km semanais (barras) + acumulado (linha)
     const charts = $(".runner-charts", card);

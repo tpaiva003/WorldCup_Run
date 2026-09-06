@@ -676,13 +676,6 @@ b {
   font-variant-numeric: tabular-nums;
 }
 
-.rstat.good .rstat-val {
-  color: var(--accent);
-}
-.rstat.bad .rstat-val {
-  color: #ffb84d;
-}
-
 .rstat-lbl {
   font-size: 9.5px;
   letter-spacing: 0.1em;
