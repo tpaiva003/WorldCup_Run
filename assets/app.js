@@ -43,6 +43,7 @@ const I18N = {
     toGo: "em falta",
     done: "completo ✓",
     totalRuns: "corridas registadas",
+    avgRun: "média por corrida",
     longestRun: "corrida + longa",
     runLog: "REGISTO DE CORRIDAS",
     runsCount: "corridas",
@@ -96,6 +97,7 @@ const I18N = {
     toGo: "to go",
     done: "done ✓",
     totalRuns: "runs logged",
+    avgRun: "average run",
     longestRun: "longest run",
     runLog: "RUN LOG",
     runsCount: "runs",
@@ -621,6 +623,15 @@ function renderRunners(data) {
     $(".stat-longest", card).textContent = pending
       ? "–"
       : `${nf1.format(stats.longestRun || 0)} km`;
+    const avgRun =
+      stats.avgRun != null
+        ? stats.avgRun
+        : totalRuns > 0
+          ? r.km / totalRuns
+          : 0;
+    $(".stat-avg", card).textContent = pending
+      ? "–"
+      : `${nf1.format(avgRun)} km`;
 
     // gráficos: km semanais (barras) + acumulado (linha)
     const charts = $(".runner-charts", card);

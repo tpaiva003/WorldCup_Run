@@ -191,12 +191,14 @@ function ymdDash(date) {
   );
 }
 
-// Estatísticas por atleta: número de corridas registadas e corrida mais longa.
+// Estatísticas por atleta: corridas registadas, corrida mais longa e média.
 function computeStats(runs) {
   const longestRun = runs.reduce((mx, r) => Math.max(mx, Number(r.km) || 0), 0);
+  const total = runs.reduce((sum, r) => sum + (Number(r.km) || 0), 0);
   return {
     totalRuns: runs.length,
     longestRun: Math.round(longestRun * 100) / 100,
+    avgRun: runs.length ? Math.round((total / runs.length) * 100) / 100 : 0,
   };
 }
 
