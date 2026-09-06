@@ -553,93 +553,12 @@ function renderRunners(data) {
     }
     existing.delete(r.id);
 
-    const required = r.required ?? goals;
-    const pending = typeof r.km !== "number";
-    const remaining = pending ? null : Math.max(0, required - r.km);
-    const done = !pending && remaining === 0 && required > 0;
-
-    card.classList.toggle("is-pending", pending);
-    card.classList.toggle("is-done", done);
-    card.classList.toggle("is-leader", r.id === leaderId && !pending);
-
-    $(".runner-name", card).textContent = r.name;
-
-    const state = $(".runner-state", card);
-    state.classList.remove("ok", "debt");
-    if (pending) {
-      state.textContent = t("stateSoon");
-    } else if (done) {
-      state.textContent = t("stateOnTrack");
-      state.classList.add("ok");
-    } else {
-      state.textContent = t("stateBehind");
-      state.classList.add("debt");
-    }
-
-    const kmNum = $(".km-num", card);
-    if (pending) {
-      kmNum.textContent = "–";
-      kmNum.dataset.count = "0";
-    } else {
-      animateNumber(kmNum, r.km, { decimals: 1 });
-    }
-
-    const pct = required > 0 && !pending ? Math.min(1, r.km / required) : 0;
-    const fill = $(".progress-fill", card);
-    requestAnimationFrame(() => {
-      fill.style.width = (pct * 100).toFixed(1) + "%";
-    });
-    fill.classList.toggle("over", !pending && r.km >= required && required > 0);
-    $(".progress", card).setAttribute(
-      "aria-valuenow",
-      Math.round(pct * 100)
-    );
-
-    $(".meta-required", card).textContent = required
-      ? `${nf.format(required)} km`
-      : "–";
-    const remEl = $(".meta-remaining", card);
-    const remLabel = $(".meta-remaining-wrap", card).lastChild; // nó de texto
-    if (pending) {
-      remEl.textContent = "–";
-      remLabel.textContent = " " + t("toGo");
-    } else if (done) {
-      remEl.textContent = "0 km";
-      remLabel.textContent = " · " + t("done");
-    } else {
-      remEl.textContent = `${nf1.format(remaining)} km`;
-      remLabel.textContent = " " + t("toGo");
-    }
-
-    // estatísticas
-    const stats = r.stats || {};
-    const totalRuns =
-      stats.totalRuns != null
-        ? stats.totalRuns
-        : Array.isArray(r.runs)
-          ? r.runs.length
-          : 0;
-    $(".stat-runs", card).textContent = pending ? "–" : nf.format(totalRuns);
-    $(".stat-longest", card).textContent = pending
-      ? "–"
-      : `${nf1.format(stats.longestRun || 0)} km`;
-    const avgRun =
-      stats.avgRun != null
-        ? stats.avgRun
-        : totalRuns > 0
-          ? r.km / totalRuns
-          : 0;
-    $(".stat-avg", card).textContent = pending
-      ? "–"
-      : `${nf1.format(avgRun)} km`;
-
-    // gráficos: km semanais (barras) + acumulado (linha)
-    const charts = $(".runner-charts", card);
-    const hasData = chart.weeksCount > 0 && (chart.series[r.id]?.total || 0) > 0;
-    charts.hidden = !hasData;
-    if (hasData) {
-      $(".chart-weekly", card).innerHTML = svgWeekly(r.id, chart);
-      $(".chart-cumulative", card).innerHTML = svgCumulative(r.id, chart);
+    // Um cartão que falhe não pode levar os outros atrás: sem isto, um
+    // ficheiro em cache dessincronizado do resto deixava a página em branco.
+    try {
+      drawRunner(card, r, { goals, leaderId, chart });
+    } catch (e) {
+      console.error(`Falha ao desenhar o cartão de ${r.name || r.id}:`, e);
     }
   });
 
@@ -647,6 +566,98 @@ function renderRunners(data) {
   existing.forEach((el) => el.remove());
 
   observeReveals(); // observa cartões/gráficos novos
+}
+
+// Preenche um cartão já montado com os dados do atleta.
+function drawRunner(card, r, { goals, leaderId, chart }) {
+  const required = r.required ?? goals;
+  const pending = typeof r.km !== "number";
+  const remaining = pending ? null : Math.max(0, required - r.km);
+  const done = !pending && remaining === 0 && required > 0;
+
+  card.classList.toggle("is-pending", pending);
+  card.classList.toggle("is-done", done);
+  card.classList.toggle("is-leader", r.id === leaderId && !pending);
+
+  $(".runner-name", card).textContent = r.name;
+
+  const state = $(".runner-state", card);
+  state.classList.remove("ok", "debt");
+  if (pending) {
+    state.textContent = t("stateSoon");
+  } else if (done) {
+    state.textContent = t("stateOnTrack");
+    state.classList.add("ok");
+  } else {
+    state.textContent = t("stateBehind");
+    state.classList.add("debt");
+  }
+
+  const kmNum = $(".km-num", card);
+  if (pending) {
+    kmNum.textContent = "–";
+    kmNum.dataset.count = "0";
+  } else {
+    animateNumber(kmNum, r.km, { decimals: 1 });
+  }
+
+  const pct = required > 0 && !pending ? Math.min(1, r.km / required) : 0;
+  const fill = $(".progress-fill", card);
+  requestAnimationFrame(() => {
+    fill.style.width = (pct * 100).toFixed(1) + "%";
+  });
+  fill.classList.toggle("over", !pending && r.km >= required && required > 0);
+  $(".progress", card).setAttribute(
+    "aria-valuenow",
+    Math.round(pct * 100)
+  );
+
+  $(".meta-required", card).textContent = required
+    ? `${nf.format(required)} km`
+    : "–";
+  const remEl = $(".meta-remaining", card);
+  const remLabel = $(".meta-remaining-wrap", card).lastChild; // nó de texto
+  if (pending) {
+    remEl.textContent = "–";
+    remLabel.textContent = " " + t("toGo");
+  } else if (done) {
+    remEl.textContent = "0 km";
+    remLabel.textContent = " · " + t("done");
+  } else {
+    remEl.textContent = `${nf1.format(remaining)} km`;
+    remLabel.textContent = " " + t("toGo");
+  }
+
+  // estatísticas
+  const stats = r.stats || {};
+  const totalRuns =
+    stats.totalRuns != null
+      ? stats.totalRuns
+      : Array.isArray(r.runs)
+        ? r.runs.length
+        : 0;
+  $(".stat-runs", card).textContent = pending ? "–" : nf.format(totalRuns);
+  $(".stat-longest", card).textContent = pending
+    ? "–"
+    : `${nf1.format(stats.longestRun || 0)} km`;
+  const avgRun =
+    stats.avgRun != null
+      ? stats.avgRun
+      : totalRuns > 0
+        ? r.km / totalRuns
+        : 0;
+  $(".stat-avg", card).textContent = pending
+    ? "–"
+    : `${nf1.format(avgRun)} km`;
+
+  // gráficos: km semanais (barras) + acumulado (linha)
+  const charts = $(".runner-charts", card);
+  const hasData = chart.weeksCount > 0 && (chart.series[r.id]?.total || 0) > 0;
+  charts.hidden = !hasData;
+  if (hasData) {
+    $(".chart-weekly", card).innerHTML = svgWeekly(r.id, chart);
+    $(".chart-cumulative", card).innerHTML = svgCumulative(r.id, chart);
+  }
 }
 
 function render(data) {
