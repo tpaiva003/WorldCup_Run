@@ -1,6 +1,6 @@
 {
   "isSample": false,
-  "generatedAt": "2026-09-06T17:32:29.900Z",
+  "generatedAt": "2026-09-06T17:33:25.064Z",
   "competition": {
     "name": "FIFA World Cup 2026",
     "startDate": "2026-06-11"
@@ -60,9 +60,9 @@
       "progress": 0.7506168831168831,
       "status": "ok",
       "stats": {
-        "totalRuns": 28,
+        "totalRuns": 29,
         "longestRun": 14.04,
-        "avgRun": 8.05
+        "avgRun": 7.97
       },
       "runs": [
         {
@@ -192,9 +192,9 @@
       "progress": 0.8181818181818182,
       "status": "ok",
       "stats": {
-        "totalRuns": 32,
+        "totalRuns": 33,
         "longestRun": 17,
-        "avgRun": 7.71
+        "avgRun": 7.64
       },
       "runs": [
         {
