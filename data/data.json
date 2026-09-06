@@ -61,9 +61,7 @@
       "status": "ok",
       "stats": {
         "totalRuns": 28,
-        "longestRun": 14.04,
-        "runStreak": 2,
-        "restStreak": 6
+        "longestRun": 14.04
       },
       "runs": [
         {
@@ -190,9 +188,7 @@
       "status": "ok",
       "stats": {
         "totalRuns": 32,
-        "longestRun": 17,
-        "runStreak": 3,
-        "restStreak": 7
+        "longestRun": 17
       },
       "runs": [
         {

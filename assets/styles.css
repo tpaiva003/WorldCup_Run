@@ -654,7 +654,7 @@ b {
 /* Estatísticas do atleta */
 .runner-stats {
   display: grid;
-  grid-template-columns: repeat(4, 1fr);
+  grid-template-columns: repeat(2, 1fr);
   gap: 12px;
   margin-top: 20px;
   padding-top: 18px;
@@ -674,13 +674,6 @@ b {
   letter-spacing: -0.02em;
   color: var(--text);
   font-variant-numeric: tabular-nums;
-}
-
-.rstat.good .rstat-val {
-  color: var(--accent);
-}
-.rstat.bad .rstat-val {
-  color: #ffb84d;
 }
 
 .rstat-lbl {
@@ -1275,10 +1268,6 @@ b {
 @media (max-width: 720px) {
   .runners {
     grid-template-columns: 1fr;
-  }
-  .runner-stats {
-    grid-template-columns: repeat(2, 1fr);
-    gap: 14px 12px;
   }
   .counter {
     align-items: flex-start;

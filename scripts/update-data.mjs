@@ -191,37 +191,12 @@ function ymdDash(date) {
   );
 }
 
-// Estatísticas por atleta: número de corridas registadas, corrida mais longa
-// e maiores sequências (com e sem corrida), a contar desde o início do mundial.
-function computeStats(runs, startDateStr, todayDate) {
+// Estatísticas por atleta: número de corridas registadas e corrida mais longa.
+function computeStats(runs) {
   const longestRun = runs.reduce((mx, r) => Math.max(mx, Number(r.km) || 0), 0);
-  const runDays = new Set();
-  for (const r of runs) {
-    const d = normalizeDate(r.date);
-    if (d) runDays.add(d);
-  }
-  const start = new Date(startDateStr + "T00:00:00Z");
-  const today = todayDate || new Date();
-  let runStreak = 0;
-  let restStreak = 0;
-  let curRun = 0;
-  let curRest = 0;
-  for (let d = new Date(start); d <= today; d.setUTCDate(d.getUTCDate() + 1)) {
-    if (runDays.has(ymdDash(d))) {
-      curRun++;
-      curRest = 0;
-      if (curRun > runStreak) runStreak = curRun;
-    } else {
-      curRest++;
-      curRun = 0;
-      if (curRest > restStreak) restStreak = curRest;
-    }
-  }
   return {
     totalRuns: runs.length,
     longestRun: Math.round(longestRun * 100) / 100,
-    runStreak,
-    restStreak,
   };
 }
 
@@ -523,7 +498,7 @@ async function main() {
       : null;
     if (km == null) status = errored ? "error" : "pending";
 
-    const stats = computeStats(runs, config.competition.startDate);
+    const stats = computeStats(runs);
     runners.push({
       id: r.id,
       name: r.name,

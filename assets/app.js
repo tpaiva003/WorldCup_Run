@@ -44,8 +44,6 @@ const I18N = {
     done: "completo ✓",
     totalRuns: "corridas registadas",
     longestRun: "corrida + longa",
-    runStreak: "dias seg. a correr",
-    restStreak: "dias seg. sem correr",
     runLog: "REGISTO DE CORRIDAS",
     runsCount: "corridas",
     colDate: "DATA",
@@ -99,8 +97,6 @@ const I18N = {
     done: "done ✓",
     totalRuns: "runs logged",
     longestRun: "longest run",
-    runStreak: "days running in a row",
-    restStreak: "days without running",
     runLog: "RUN LOG",
     runsCount: "runs",
     colDate: "DATE",
@@ -625,12 +621,6 @@ function renderRunners(data) {
     $(".stat-longest", card).textContent = pending
       ? "–"
       : `${nf1.format(stats.longestRun || 0)} km`;
-    $(".stat-runstreak", card).textContent = pending
-      ? "–"
-      : nf.format(stats.runStreak || 0);
-    $(".stat-reststreak", card).textContent = pending
-      ? "–"
-      : nf.format(stats.restStreak || 0);
 
     // gráficos: km semanais (barras) + acumulado (linha)
     const charts = $(".runner-charts", card);
