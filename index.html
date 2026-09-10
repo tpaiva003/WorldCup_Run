@@ -18,7 +18,7 @@
       href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap"
       rel="stylesheet"
     />
-    <link rel="stylesheet" href="assets/styles.css?v=2" />
+    <link rel="stylesheet" href="assets/styles.css?v=3" />
   </head>
   <body>
     <div id="intro" class="intro" role="dialog" aria-label="Entrar no site">
@@ -225,6 +225,40 @@
       </div>
     </div>
 
+    <!-- Cerimónia da meta: entra quando um atleta cumpre os 308 km -->
+    <div class="finale" id="finale" hidden>
+      <div class="finale-glow" aria-hidden="true"></div>
+      <div class="finale-tape finale-tape-l" aria-hidden="true"></div>
+      <div class="finale-tape finale-tape-r" aria-hidden="true"></div>
+      <div class="finale-sparks" id="finaleSparks" aria-hidden="true"></div>
+      <div
+        class="finale-inner"
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="finaleName"
+      >
+        <img class="finale-trophy" src="assets/trophy.png" alt="" />
+        <p class="finale-eyebrow mono" data-i18n="finaleEyebrow">META CUMPRIDA</p>
+        <h2 class="finale-name" id="finaleName">–</h2>
+        <div class="finale-km">
+          <span class="finale-km-num" id="finaleKm" data-count="0">0</span>
+          <span class="finale-km-unit mono" data-i18n="kmRun">km corridos</span>
+        </div>
+        <p class="finale-line mono" id="finaleLine">–</p>
+        <p class="finale-sub" data-i18n="finaleSub">
+          Correu o Mundial inteiro. Um golo, um quilómetro — até ao fim.
+        </p>
+        <button
+          class="finale-close mono"
+          id="finaleClose"
+          type="button"
+          data-i18n="finaleClose"
+        >
+          CONTINUAR
+        </button>
+      </div>
+    </div>
+
     <div class="music">
       <audio id="anthem" src="assets/anthem.mp3" loop preload="auto"></audio>
       <button
@@ -240,6 +274,6 @@
     </div>
 
     <script src="assets/trigger-config.js"></script>
-    <script src="assets/app.js?v=2" defer></script>
+    <script src="assets/app.js?v=3" defer></script>
   </body>
 </html>

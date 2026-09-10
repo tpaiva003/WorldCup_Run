@@ -1294,6 +1294,230 @@ b {
   }
 }
 
+/* ---------- Cerimónia da meta ---------- */
+
+.finale {
+  position: fixed;
+  inset: 0;
+  z-index: 200;
+  display: grid;
+  place-items: center;
+  background: rgba(8, 8, 9, 0.94);
+  backdrop-filter: blur(6px);
+  cursor: pointer;
+  animation: finaleIn 0.5s var(--ease) both;
+}
+.finale[hidden] {
+  display: none; /* sem isto, o display:grid acima anulava o atributo hidden */
+}
+.finale.is-leaving {
+  animation: finaleOut 0.45s var(--ease) both;
+}
+@keyframes finaleIn {
+  from {
+    opacity: 0;
+  }
+}
+@keyframes finaleOut {
+  to {
+    opacity: 0;
+  }
+}
+
+/* halo que respira por trás da taça */
+.finale-glow {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background: radial-gradient(
+    58% 44% at 50% 42%,
+    var(--accent-soft),
+    transparent 70%
+  );
+  opacity: 0;
+  animation: finaleGlow 1.6s 0.35s var(--ease) forwards;
+}
+@keyframes finaleGlow {
+  to {
+    opacity: 0.9;
+  }
+}
+
+/* a fita da meta: cresce do centro, depois parte-se em duas */
+.finale-tape {
+  position: absolute;
+  top: 50%;
+  width: 50%;
+  height: 2px;
+  background: linear-gradient(90deg, transparent, var(--accent));
+  box-shadow: 0 0 18px var(--accent-line);
+  pointer-events: none;
+  transform: scaleX(0);
+  animation: finaleTapeDraw 0.65s 0.15s var(--ease) forwards,
+    finaleTapeSnap 0.9s 1.15s var(--ease) forwards;
+}
+.finale-tape-l {
+  right: 50%;
+  transform-origin: right center;
+}
+.finale-tape-r {
+  left: 50%;
+  transform-origin: left center;
+  background: linear-gradient(270deg, transparent, var(--accent));
+}
+@keyframes finaleTapeDraw {
+  to {
+    transform: scaleX(1);
+  }
+}
+@keyframes finaleTapeSnap {
+  to {
+    opacity: 0;
+  }
+}
+.finale-tape-l {
+  animation-name: finaleTapeDraw, finaleTapeSnapL;
+}
+.finale-tape-r {
+  animation-name: finaleTapeDraw, finaleTapeSnapR;
+}
+@keyframes finaleTapeSnapL {
+  to {
+    transform: scaleX(1) translateX(-30%);
+    opacity: 0;
+  }
+}
+@keyframes finaleTapeSnapR {
+  to {
+    transform: scaleX(1) translateX(30%);
+    opacity: 0;
+  }
+}
+
+/* lascas de luz a subir — poucas e lentas, sem confetti */
+.finale-sparks {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  pointer-events: none;
+}
+.finale-spark {
+  position: absolute;
+  top: 50%;
+  left: var(--x);
+  width: 2px;
+  height: var(--h);
+  border-radius: 2px;
+  background: var(--c);
+  opacity: 0;
+  animation: finaleSpark var(--t) var(--d) var(--ease) forwards;
+}
+@keyframes finaleSpark {
+  10% {
+    opacity: 0.85;
+  }
+  to {
+    transform: translate3d(var(--dx), var(--dy), 0) rotate(var(--r));
+    opacity: 0;
+  }
+}
+
+.finale-inner {
+  position: relative;
+  z-index: 1;
+  max-width: min(92vw, 620px);
+  padding: 24px;
+  text-align: center;
+}
+.finale-trophy {
+  display: block;
+  height: clamp(74px, 13vh, 118px);
+  width: auto;
+  margin: 0 auto 22px;
+  filter: drop-shadow(0 0 2px rgba(255, 255, 255, 0.5))
+    drop-shadow(0 0 26px var(--accent-line));
+  animation: finaleRise 0.8s 0.5s var(--spring) both;
+}
+.finale-eyebrow {
+  font-size: 11px;
+  letter-spacing: 0.28em;
+  color: var(--accent);
+  margin-bottom: 12px;
+  animation: finaleRise 0.7s 0.85s var(--ease) both;
+}
+.finale-name {
+  font-size: clamp(2rem, min(7vw, 9vh), 3.4rem);
+  font-weight: 600;
+  letter-spacing: -0.03em;
+  line-height: 1.05;
+  animation: finaleRise 0.7s 1s var(--ease) both;
+}
+.finale-km {
+  display: flex;
+  align-items: baseline;
+  justify-content: center;
+  gap: 10px;
+  margin-top: 14px;
+  animation: finaleRise 0.7s 1.15s var(--ease) both;
+}
+.finale-km-num {
+  font-size: clamp(2.6rem, min(9vw, 12vh), 4.6rem);
+  font-weight: 500;
+  letter-spacing: -0.04em;
+  line-height: 1;
+  color: var(--accent);
+  font-variant-numeric: tabular-nums;
+}
+.finale-km-unit {
+  font-size: 12px;
+  letter-spacing: 0.12em;
+  color: var(--muted);
+}
+.finale-line {
+  margin-top: 16px;
+  font-size: 11px;
+  letter-spacing: 0.16em;
+  color: var(--muted);
+  animation: finaleRise 0.7s 1.3s var(--ease) both;
+}
+.finale-sub {
+  max-width: 32ch;
+  margin: 18px auto 0;
+  font-size: clamp(13px, 1.5vw, 15px);
+  line-height: 1.5;
+  color: var(--muted);
+  animation: finaleRise 0.7s 1.45s var(--ease) both;
+}
+.finale-close {
+  margin-top: 30px;
+  padding: 12px 26px;
+  font-size: 11px;
+  letter-spacing: 0.18em;
+  color: var(--text);
+  background: none;
+  border: 1px solid var(--border);
+  border-radius: 100px;
+  cursor: pointer;
+  transition: border-color 0.25s var(--ease), color 0.25s var(--ease);
+  animation: finaleRise 0.7s 1.6s var(--ease) both;
+}
+.finale-close:hover {
+  border-color: var(--accent-line);
+  color: var(--accent);
+}
+@keyframes finaleRise {
+  from {
+    opacity: 0;
+    transform: translateY(14px);
+  }
+}
+
+/* o cartão de quem cumpriu fica marcado, mesmo depois da cerimónia */
+.runner.is-done {
+  border-color: var(--accent-line);
+  box-shadow: 0 0 0 1px var(--accent-soft), 0 18px 50px rgba(0, 0, 0, 0.4);
+}
+
 /* ---------- Acessibilidade ---------- */
 
 @media (prefers-reduced-motion: reduce) {
