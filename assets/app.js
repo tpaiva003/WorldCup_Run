@@ -72,6 +72,11 @@ const I18N = {
     cumulative: "acum.",
     legendKm: "km corridos",
     legendGoals: "golos do Mundial",
+    finaleEyebrow: "META CUMPRIDA",
+    finaleLine: "META {goal} KM · {runs} CORRIDAS · {days} DIAS",
+    finaleSub:
+      "Correu o Mundial inteiro. Um golo, um quilómetro — até ao fim.",
+    finaleClose: "CONTINUAR",
   },
   en: {
     introEyebrow: "FIFA WORLD CUP 2026 · HIGHEST-SCORING EVER",
@@ -126,6 +131,11 @@ const I18N = {
     cumulative: "cum.",
     legendKm: "km run",
     legendGoals: "World Cup goals",
+    finaleEyebrow: "GOAL COMPLETED",
+    finaleLine: "TARGET {goal} KM · {runs} RUNS · {days} DAYS",
+    finaleSub:
+      "Ran the whole World Cup. One goal, one kilometre — all the way.",
+    finaleClose: "CONTINUE",
   },
 };
 
@@ -687,6 +697,7 @@ function render(data) {
   renderRunners(data);
   applyStaticI18n();
   document.title = `${data.goals?.total ?? 0} ${t("goalsWord")} · Um Golo · Um Km`;
+  checkFinale(data);
 }
 
 /* ---------- modal: registo de corridas ---------- */
@@ -795,6 +806,35 @@ function playAnthem() {
   if (anthem) anthem.play().catch(() => {});
 }
 
+// A música acompanha quem está a ver a página: ao sair do browser ou mudar
+// de separador pára, e volta quando se regressa — a não ser que entretanto
+// tenha sido desligada no botão.
+let musicWanted = false; // o utilizador quer música
+let pausedAway = false; // fomos nós a pausar por a página ter saído de vista
+
+function pauseMusicAway() {
+  if (!anthem || anthem.paused) return;
+  pausedAway = true;
+  anthem.pause();
+}
+
+function resumeMusicBack() {
+  if (!anthem || !pausedAway) return;
+  pausedAway = false;
+  if (musicWanted) playAnthem();
+}
+
+if (anthem) {
+  document.addEventListener("visibilitychange", () => {
+    if (document.visibilityState === "hidden") pauseMusicAway();
+    else resumeMusicBack();
+  });
+  // no ambiente de trabalho, trocar de janela não muda a visibilidade
+  window.addEventListener("blur", pauseMusicAway);
+  window.addEventListener("focus", resumeMusicBack);
+  window.addEventListener("pagehide", pauseMusicAway);
+}
+
 if (anthem) {
   anthem.volume = 0.6;
   anthem.addEventListener("play", () => setMusicPlayingUI(true));
@@ -810,6 +850,7 @@ function musicFirstGesture(ev) {
   ["pointerdown", "keydown", "touchstart"].forEach((t) =>
     window.removeEventListener(t, musicFirstGesture)
   );
+  musicWanted = true;
   playAnthem();
 }
 ["pointerdown", "keydown", "touchstart"].forEach((t) =>
@@ -819,8 +860,139 @@ function musicFirstGesture(ev) {
 if (musicBtn && anthem) {
   musicBtn.addEventListener("click", () => {
     musicAutostarted = true;
-    if (anthem.paused) playAnthem();
-    else anthem.pause();
+    if (anthem.paused) {
+      musicWanted = true;
+      playAnthem();
+    } else {
+      musicWanted = false;
+      pausedAway = false;
+      anthem.pause();
+    }
+  });
+}
+
+/* ---------- Cerimónia da meta ---------- */
+// Quando um atleta chega aos km do desafio, a página pára para o reconhecer:
+// a fita da meta parte-se, a taça sobe e os números são contados. Uma vez por
+// atleta e por dispositivo — voltar ao site não repete a cerimónia.
+
+const FINALE_KEY = "umgolo:meta:";
+let finaleTimer = null;
+let pendingFinale = null; // guardado se o ecrã de entrada ainda estiver à frente
+
+function finaleSeen(id) {
+  try {
+    return localStorage.getItem(FINALE_KEY + id) === "1";
+  } catch {
+    return false; // navegação privada: no pior caso repete-se
+  }
+}
+
+function markFinaleSeen(id) {
+  try {
+    localStorage.setItem(FINALE_KEY + id, "1");
+  } catch {
+    /* sem armazenamento: seguimos na mesma */
+  }
+}
+
+// Lascas de luz a subir da fita — poucas e lentas, para não virar confetti.
+function buildSparks(host) {
+  const frag = document.createDocumentFragment();
+  for (let i = 0; i < 34; i++) {
+    const sp = document.createElement("i");
+    sp.className = "finale-spark";
+    const dx = (Math.random() * 2 - 1) * 26;
+    sp.style.setProperty("--x", `${Math.random() * 100}%`);
+    sp.style.setProperty("--h", `${8 + Math.random() * 16}px`);
+    sp.style.setProperty("--dx", `${dx}vw`);
+    sp.style.setProperty("--dy", `${-30 - Math.random() * 45}vh`);
+    sp.style.setProperty("--r", `${dx * 1.5}deg`);
+    sp.style.setProperty("--t", `${2.2 + Math.random() * 1.8}s`);
+    sp.style.setProperty("--d", `${1.1 + Math.random() * 1.2}s`);
+    sp.style.setProperty(
+      "--c",
+      Math.random() < 0.7 ? "var(--accent)" : "rgba(255,255,255,.8)"
+    );
+    frag.appendChild(sp);
+  }
+  host.replaceChildren(frag);
+}
+
+function closeFinale() {
+  const el = $("#finale");
+  if (!el || el.hidden) return;
+  clearTimeout(finaleTimer);
+  el.classList.add("is-leaving");
+  setTimeout(() => {
+    el.hidden = true;
+    el.classList.remove("is-leaving");
+    const sparks = $("#finaleSparks");
+    if (sparks) sparks.replaceChildren();
+  }, 450);
+}
+
+function showFinale(r, data) {
+  const el = $("#finale");
+  if (!el) return;
+  const required = r.required ?? data.goals?.total ?? 0;
+  const runs = Array.isArray(r.runs) ? r.runs : [];
+  const totalRuns = r.stats?.totalRuns ?? runs.length;
+  // dias entre o arranque do desafio e a corrida que fechou a meta
+  const start = parseRunDate(data.competition?.startDate);
+  const end = parseRunDate(runs[0]?.date) ?? Date.now();
+  const days =
+    start != null ? Math.max(1, Math.round((end - start) / 864e5) + 1) : 0;
+
+  $("#finaleName").textContent = r.name;
+  $("#finaleLine").textContent = t("finaleLine")
+    .replace("{goal}", nf.format(required))
+    .replace("{runs}", nf.format(totalRuns))
+    .replace("{days}", nf.format(days));
+
+  const kmEl = $("#finaleKm");
+  kmEl.dataset.count = "0";
+  kmEl.textContent = "0";
+
+  el.hidden = false;
+  buildSparks($("#finaleSparks"));
+  setTimeout(() => animateNumber(kmEl, r.km ?? required, { decimals: 1 }), 1150);
+  finaleTimer = setTimeout(closeFinale, 14000);
+  const btn = $("#finaleClose");
+  if (btn) btn.focus({ preventScroll: true });
+}
+
+function runnerIsDone(r, data) {
+  const required = r.required ?? data.goals?.total ?? 0;
+  return typeof r.km === "number" && required > 0 && r.km >= required;
+}
+
+function checkFinale(data) {
+  const el = $("#finale");
+  if (!el || !el.hidden) return; // já está no ecrã
+  const runners = data.runners || [];
+
+  // ?celebrar=<id> mostra a cerimónia sem esperar pela meta (para rever o UX)
+  const forced = new URLSearchParams(location.search).get("celebrar");
+  const winner = forced
+    ? runners.find((r) => r.id === forced) || runners[0]
+    : runners.find((r) => runnerIsDone(r, data) && !finaleSeen(r.id));
+  if (!winner) return;
+  if (!forced) markFinaleSeen(winner.id);
+
+  // se o ecrã de entrada ainda cobre o site, a cerimónia espera pela entrada
+  const introEl = $("#intro");
+  if (introEl && !introEl.hidden && !introEl.classList.contains("is-hidden")) {
+    pendingFinale = { r: winner, data };
+    return;
+  }
+  showFinale(winner, data);
+}
+
+if ($("#finale")) {
+  $("#finale").addEventListener("click", closeFinale);
+  document.addEventListener("keydown", (e) => {
+    if (e.key === "Escape") closeFinale();
   });
 }
 
@@ -831,8 +1003,14 @@ const introEnter = $("#introEnter");
 function enterSite() {
   if (!intro || intro.classList.contains("is-hidden")) return;
   musicAutostarted = true;
+  musicWanted = true;
   playAnthem(); // o clique conta como gesto -> o browser deixa tocar
   setTimeout(startReveals, 140); // conteúdo entra em cascata ao abrir
+  if (pendingFinale) {
+    const { r, data } = pendingFinale;
+    pendingFinale = null;
+    setTimeout(() => showFinale(r, data), 1100);
+  }
 
   // A taça voa do ecrã de entrada para o logótipo da barra de topo.
   const trophy = $("#introTrophy");
