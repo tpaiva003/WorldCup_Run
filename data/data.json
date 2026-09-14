@@ -1,6 +1,6 @@
 {
   "isSample": false,
-  "generatedAt": "2026-09-14T17:35:58.827Z",
+  "generatedAt": "2026-09-14T21:24:07.394Z",
   "competition": {
     "name": "FIFA World Cup 2026",
     "startDate": "2026-06-11"
@@ -54,17 +54,21 @@
     {
       "id": "jose",
       "name": "José",
-      "km": 246.32,
+      "km": 252.02,
       "required": 308,
-      "remaining": 61.68,
-      "progress": 0.7997402597402598,
+      "remaining": 55.98,
+      "progress": 0.8182467532467533,
       "status": "ok",
       "stats": {
-        "totalRuns": 31,
+        "totalRuns": 32,
         "longestRun": 14.04,
-        "avgRun": 7.95
+        "avgRun": 7.88
       },
       "runs": [
+        {
+          "date": "2026-09-14",
+          "km": 5.7
+        },
         {
           "date": "2026-09-10",
           "km": 9.1
@@ -194,17 +198,25 @@
     {
       "id": "daniel",
       "name": "Tiago",
-      "km": 288.12,
+      "km": 298.62,
       "required": 308,
-      "remaining": 19.88,
-      "progress": 0.9354545454545454,
+      "remaining": 9.38,
+      "progress": 0.9695454545454546,
       "status": "ok",
       "stats": {
-        "totalRuns": 36,
+        "totalRuns": 38,
         "longestRun": 22.09,
-        "avgRun": 8
+        "avgRun": 7.86
       },
       "runs": [
+        {
+          "date": "2026-09-14",
+          "km": 5.5
+        },
+        {
+          "date": "2026-09-13",
+          "km": 5
+        },
         {
           "date": "2026-09-11",
           "km": 22.09
