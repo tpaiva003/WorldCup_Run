@@ -73,9 +73,13 @@ const I18N = {
     legendKm: "km corridos",
     legendGoals: "golos do Mundial",
     finaleEyebrow: "META CUMPRIDA",
-    finaleLine: "META {goal} KM · {runs} CORRIDAS · {days} DIAS",
+    finaleEyebrowBoth: "DESAFIO COMPLETO",
+    finaleStats: "{runs} CORRIDAS · {days} DIAS",
+    finaleGoal: "META {goal} KM",
     finaleSub:
       "Correu o Mundial inteiro. Um golo, um quilómetro — até ao fim.",
+    finaleSubBoth:
+      "Correram o Mundial inteiro. Os dois, até ao fim: um golo, um quilómetro.",
     finaleClose: "CONTINUAR",
   },
   en: {
@@ -132,9 +136,13 @@ const I18N = {
     legendKm: "km run",
     legendGoals: "World Cup goals",
     finaleEyebrow: "GOAL COMPLETED",
-    finaleLine: "TARGET {goal} KM · {runs} RUNS · {days} DAYS",
+    finaleEyebrowBoth: "CHALLENGE COMPLETE",
+    finaleStats: "{runs} RUNS · {days} DAYS",
+    finaleGoal: "TARGET {goal} KM",
     finaleSub:
       "Ran the whole World Cup. One goal, one kilometre — all the way.",
+    finaleSubBoth:
+      "They ran the whole World Cup. Both of them, all the way: one goal, one kilometre.",
     finaleClose: "CONTINUE",
   },
 };
@@ -872,51 +880,90 @@ if (musicBtn && anthem) {
 }
 
 /* ---------- Cerimónia da meta ---------- */
-// Quando um atleta chega aos km do desafio, a página pára para o reconhecer:
-// a fita da meta parte-se, a taça sobe e os números são contados. Uma vez por
-// atleta e por dispositivo — voltar ao site não repete a cerimónia.
+// Quando um atleta chega aos km do desafio, a página pára para o reconhecer.
+// Se os dois chegarem, a cerimónia é dos dois — o desafio era a par.
+// Acontece sempre que se abre o site (uma vez por visita, para não voltar a
+// interromper a cada atualização de dados), e pode ser revista no cartão.
 
-const FINALE_KEY = "umgolo:meta:";
+let finaleShown = false; // já apareceu nesta visita
 let finaleTimer = null;
 let pendingFinale = null; // guardado se o ecrã de entrada ainda estiver à frente
 
-function finaleSeen(id) {
-  try {
-    return localStorage.getItem(FINALE_KEY + id) === "1";
-  } catch {
-    return false; // navegação privada: no pior caso repete-se
-  }
-}
-
-function markFinaleSeen(id) {
-  try {
-    localStorage.setItem(FINALE_KEY + id, "1");
-  } catch {
-    /* sem armazenamento: seguimos na mesma */
-  }
-}
-
-// Lascas de luz a subir da fita — poucas e lentas, para não virar confetti.
+// Lascas de luz que saltam da fita e caem devagar — poucas, sem confetti.
 function buildSparks(host) {
   const frag = document.createDocumentFragment();
-  for (let i = 0; i < 34; i++) {
+  const cores = [
+    "var(--accent)",
+    "var(--accent)",
+    "rgba(255,255,255,.85)",
+    "rgba(231,192,75,.9)", // o dourado da taça
+  ];
+  for (let i = 0; i < 46; i++) {
     const sp = document.createElement("i");
     sp.className = "finale-spark";
-    const dx = (Math.random() * 2 - 1) * 26;
+    const dx = (Math.random() * 2 - 1) * 34;
     sp.style.setProperty("--x", `${Math.random() * 100}%`);
-    sp.style.setProperty("--h", `${8 + Math.random() * 16}px`);
+    sp.style.setProperty("--h", `${7 + Math.random() * 18}px`);
     sp.style.setProperty("--dx", `${dx}vw`);
-    sp.style.setProperty("--dy", `${-30 - Math.random() * 45}vh`);
-    sp.style.setProperty("--r", `${dx * 1.5}deg`);
-    sp.style.setProperty("--t", `${2.2 + Math.random() * 1.8}s`);
-    sp.style.setProperty("--d", `${1.1 + Math.random() * 1.2}s`);
-    sp.style.setProperty(
-      "--c",
-      Math.random() < 0.7 ? "var(--accent)" : "rgba(255,255,255,.8)"
-    );
+    sp.style.setProperty("--dy", `${-34 - Math.random() * 46}vh`);
+    sp.style.setProperty("--r", `${dx * 2.2}deg`);
+    sp.style.setProperty("--t", `${2.4 + Math.random() * 2}s`);
+    sp.style.setProperty("--d", `${1.05 + Math.random() * 0.9}s`);
+    sp.style.setProperty("--c", cores[(Math.random() * cores.length) | 0]);
     frag.appendChild(sp);
   }
   host.replaceChildren(frag);
+}
+
+// Dias entre o arranque do desafio e a corrida que fechou a meta.
+function daysToGoal(r, data) {
+  const start = parseRunDate(data.competition?.startDate);
+  if (start == null) return 0;
+  const runs = Array.isArray(r.runs) ? r.runs : [];
+  const end = parseRunDate(runs[0]?.date) ?? Date.now();
+  return Math.max(1, Math.round((end - start) / 864e5) + 1);
+}
+
+function buildAthletes(list, data) {
+  const host = $("#finaleAthletes");
+  if (!host) return [];
+  host.classList.toggle("is-duo", list.length > 1);
+  const frag = document.createDocumentFragment();
+  const nums = [];
+  list.forEach((r, i) => {
+    const box = document.createElement("div");
+    box.className = "finale-athlete";
+    // a dois, o segundo entra ligeiramente depois — chegam em fila, não em bloco
+    box.style.setProperty("--delay", `${1.4 + i * 0.35}s`);
+
+    const nome = document.createElement("h2");
+    nome.className = "finale-name";
+    nome.textContent = r.name;
+
+    const km = document.createElement("div");
+    km.className = "finale-km";
+    const num = document.createElement("span");
+    num.className = "finale-km-num";
+    num.dataset.count = "0";
+    num.textContent = "0";
+    const unit = document.createElement("span");
+    unit.className = "finale-km-unit mono";
+    unit.textContent = t("kmRun");
+    km.append(num, unit);
+
+    const stats = document.createElement("p");
+    stats.className = "finale-stats mono";
+    const totalRuns = r.stats?.totalRuns ?? (r.runs || []).length;
+    stats.textContent = t("finaleStats")
+      .replace("{runs}", nf.format(totalRuns))
+      .replace("{days}", nf.format(daysToGoal(r, data)));
+
+    box.append(nome, km, stats);
+    frag.appendChild(box);
+    nums.push({ el: num, km: r.km ?? r.required ?? 0, delay: 1550 + i * 350 });
+  });
+  host.replaceChildren(frag);
+  return nums;
 }
 
 function closeFinale() {
@@ -932,32 +979,29 @@ function closeFinale() {
   }, 450);
 }
 
-function showFinale(r, data) {
+function showFinale(list, data) {
   const el = $("#finale");
-  if (!el) return;
-  const required = r.required ?? data.goals?.total ?? 0;
-  const runs = Array.isArray(r.runs) ? r.runs : [];
-  const totalRuns = r.stats?.totalRuns ?? runs.length;
-  // dias entre o arranque do desafio e a corrida que fechou a meta
-  const start = parseRunDate(data.competition?.startDate);
-  const end = parseRunDate(runs[0]?.date) ?? Date.now();
-  const days =
-    start != null ? Math.max(1, Math.round((end - start) / 864e5) + 1) : 0;
+  if (!el || !list.length) return;
+  const duo = list.length > 1;
+  const required = list[0].required ?? data.goals?.total ?? 0;
 
-  $("#finaleName").textContent = r.name;
-  $("#finaleLine").textContent = t("finaleLine")
-    .replace("{goal}", nf.format(required))
-    .replace("{runs}", nf.format(totalRuns))
-    .replace("{days}", nf.format(days));
-
-  const kmEl = $("#finaleKm");
-  kmEl.dataset.count = "0";
-  kmEl.textContent = "0";
+  $("#finaleEyebrow").textContent = t(duo ? "finaleEyebrowBoth" : "finaleEyebrow");
+  $("#finaleGoal").textContent = t("finaleGoal").replace(
+    "{goal}",
+    nf.format(required)
+  );
+  $("#finaleSub").textContent = t(duo ? "finaleSubBoth" : "finaleSub");
+  const nums = buildAthletes(list, data);
 
   el.hidden = false;
   buildSparks($("#finaleSparks"));
-  setTimeout(() => animateNumber(kmEl, r.km ?? required, { decimals: 1 }), 1150);
-  finaleTimer = setTimeout(closeFinale, 14000);
+  nums.forEach(({ el: num, km, delay }) => {
+    // com movimento reduzido não há coreografia a acompanhar: os números
+    // aparecem já feitos, em vez de ficarem a zero à espera do tempo certo
+    if (REDUCED) animateNumber(num, km, { decimals: 1 });
+    else setTimeout(() => animateNumber(num, km, { decimals: 1 }), delay);
+  });
+  finaleTimer = setTimeout(closeFinale, duo ? 18000 : 16000);
   const btn = $("#finaleClose");
   if (btn) btn.focus({ preventScroll: true });
 }
@@ -967,32 +1011,59 @@ function runnerIsDone(r, data) {
   return typeof r.km === "number" && required > 0 && r.km >= required;
 }
 
-function checkFinale(data) {
-  const el = $("#finale");
-  if (!el || !el.hidden) return; // já está no ecrã
-  const runners = data.runners || [];
-
-  // ?celebrar=<id> mostra a cerimónia sem esperar pela meta (para rever o UX)
-  const forced = new URLSearchParams(location.search).get("celebrar");
-  const winner = forced
-    ? runners.find((r) => r.id === forced) || runners[0]
-    : runners.find((r) => runnerIsDone(r, data) && !finaleSeen(r.id));
-  if (!winner) return;
-  if (!forced) markFinaleSeen(winner.id);
-
-  // se o ecrã de entrada ainda cobre o site, a cerimónia espera pela entrada
+// Abre a cerimónia, ou põe-na em espera se o ecrã de entrada ainda cobrir o site.
+function queueFinale(list, data) {
   const introEl = $("#intro");
   if (introEl && !introEl.hidden && !introEl.classList.contains("is-hidden")) {
-    pendingFinale = { r: winner, data };
+    pendingFinale = { list, data };
     return;
   }
-  showFinale(winner, data);
+  showFinale(list, data);
+}
+
+function checkFinale(data) {
+  const el = $("#finale");
+  if (!el || !el.hidden || finaleShown) return;
+  const runners = data.runners || [];
+
+  // ?celebrar=<id> (ou ?celebrar=ambos) mostra a cerimónia sem esperar pela meta
+  const forced = new URLSearchParams(location.search).get("celebrar");
+  let list;
+  if (forced) {
+    list =
+      forced === "ambos" || forced === "both"
+        ? runners.slice(0, 2)
+        : [runners.find((r) => r.id === forced) || runners[0]].filter(Boolean);
+  } else {
+    list = runners.filter((r) => runnerIsDone(r, data));
+  }
+  if (!list.length) return;
+
+  finaleShown = true;
+  queueFinale(list, data);
+}
+
+// Rever a cerimónia a partir do cartão de quem cumpriu.
+function replayFinale(id) {
+  if (!currentData) return;
+  const done = (currentData.runners || []).filter((r) =>
+    runnerIsDone(r, currentData)
+  );
+  if (!done.length) return;
+  // se os dois cumpriram, rever é rever a chegada dos dois
+  const list = done.length > 1 ? done : done.filter((r) => r.id === id);
+  if (list.length) showFinale(list, currentData);
 }
 
 if ($("#finale")) {
   $("#finale").addEventListener("click", closeFinale);
   document.addEventListener("keydown", (e) => {
     if (e.key === "Escape") closeFinale();
+  });
+  $("#runners")?.addEventListener("click", (e) => {
+    const state = e.target.closest?.(".runner-state");
+    const card = state?.closest(".runner.is-done");
+    if (card) replayFinale(card.dataset.id);
   });
 }
 
@@ -1007,9 +1078,9 @@ function enterSite() {
   playAnthem(); // o clique conta como gesto -> o browser deixa tocar
   setTimeout(startReveals, 140); // conteúdo entra em cascata ao abrir
   if (pendingFinale) {
-    const { r, data } = pendingFinale;
+    const { list, data } = pendingFinale;
     pendingFinale = null;
-    setTimeout(() => showFinale(r, data), 1100);
+    setTimeout(() => showFinale(list, data), 1100);
   }
 
   // A taça voa do ecrã de entrada para o logótipo da barra de topo.
