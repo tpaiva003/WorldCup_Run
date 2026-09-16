@@ -77,7 +77,7 @@ const I18N = {
     finaleStats: "{runs} CORRIDAS · {days} DIAS",
     finaleGoal: "META {goal} KM",
     finaleSub:
-      "Correu o Mundial inteiro. Um golo, um quilómetro — até ao fim.",
+      "Correu o Mundial inteiro. Um golo, um quilómetro, até ao fim.",
     finaleSubBoth:
       "Correram o Mundial inteiro. Os dois, até ao fim: um golo, um quilómetro.",
     finaleClose: "CONTINUAR",
@@ -140,7 +140,7 @@ const I18N = {
     finaleStats: "{runs} RUNS · {days} DAYS",
     finaleGoal: "TARGET {goal} KM",
     finaleSub:
-      "Ran the whole World Cup. One goal, one kilometre — all the way.",
+      "Ran the whole World Cup. One goal, one kilometre, all the way.",
     finaleSubBoth:
       "They ran the whole World Cup. Both of them, all the way: one goal, one kilometre.",
     finaleClose: "CONTINUE",
