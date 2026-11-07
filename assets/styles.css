@@ -1294,7 +1294,11 @@ b {
   }
 }
 
-/* ---------- Cerimónia da meta ---------- */
+/* ---------- Cerimónia da meta ----------
+   Quatro tempos: a aproximação (escurece e uma luz atravessa), o corte da
+   fita (clarão + onda + lascas), o reconhecimento (taça, nomes e números)
+   e o repouso (halo a respirar, taça a flutuar).
+   ---------------------------------------- */
 
 .finale {
   position: fixed;
@@ -1302,10 +1306,11 @@ b {
   z-index: 200;
   display: grid;
   place-items: center;
-  background: rgba(8, 8, 9, 0.94);
-  backdrop-filter: blur(6px);
+  overflow: hidden;
+  background: rgba(6, 6, 7, 0.96);
+  backdrop-filter: blur(7px);
   cursor: pointer;
-  animation: finaleIn 0.5s var(--ease) both;
+  animation: finaleIn 0.55s var(--ease) both;
 }
 .finale[hidden] {
   display: none; /* sem isto, o display:grid acima anulava o atributo hidden */
@@ -1324,77 +1329,137 @@ b {
   }
 }
 
-/* halo que respira por trás da taça */
+/* ato 1 — halo que respira e uma luz que atravessa o ecrã */
 .finale-glow {
   position: absolute;
   inset: 0;
   pointer-events: none;
   background: radial-gradient(
-    58% 44% at 50% 42%,
+    58% 44% at 50% 40%,
     var(--accent-soft),
     transparent 70%
   );
   opacity: 0;
-  animation: finaleGlow 1.6s 0.35s var(--ease) forwards;
+  animation: finaleGlow 1.4s 0.4s var(--ease) forwards,
+    finaleBreathe 6s 1.8s var(--ease) infinite;
 }
 @keyframes finaleGlow {
   to {
     opacity: 0.9;
   }
 }
+@keyframes finaleBreathe {
+  50% {
+    opacity: 0.55;
+  }
+}
+.finale-sweep {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  width: 45vw;
+  pointer-events: none;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    rgba(204, 255, 0, 0.09),
+    transparent
+  );
+  transform: translateX(-60vw);
+  animation: finaleSweep 1.1s 0.1s var(--ease) forwards;
+}
+@keyframes finaleSweep {
+  to {
+    transform: translateX(140vw);
+  }
+}
 
-/* a fita da meta: cresce do centro, depois parte-se em duas */
+/* ato 2 — a fita cresce do centro e parte-se ao ser cortada */
 .finale-tape {
   position: absolute;
   top: 50%;
   width: 50%;
   height: 2px;
-  background: linear-gradient(90deg, transparent, var(--accent));
-  box-shadow: 0 0 18px var(--accent-line);
   pointer-events: none;
+  background: linear-gradient(90deg, transparent, var(--accent));
+  box-shadow: 0 0 20px var(--accent-line);
   transform: scaleX(0);
-  animation: finaleTapeDraw 0.65s 0.15s var(--ease) forwards,
-    finaleTapeSnap 0.9s 1.15s var(--ease) forwards;
+  animation-duration: 0.6s, 1s;
+  animation-delay: 0.25s, 1.05s;
+  animation-timing-function: var(--ease);
+  animation-fill-mode: forwards;
 }
 .finale-tape-l {
   right: 50%;
   transform-origin: right center;
+  animation-name: finaleTapeDraw, finaleTapeSnapL;
 }
 .finale-tape-r {
   left: 50%;
   transform-origin: left center;
   background: linear-gradient(270deg, transparent, var(--accent));
+  animation-name: finaleTapeDraw, finaleTapeSnapR;
 }
 @keyframes finaleTapeDraw {
   to {
     transform: scaleX(1);
   }
 }
-@keyframes finaleTapeSnap {
-  to {
-    opacity: 0;
-  }
-}
-.finale-tape-l {
-  animation-name: finaleTapeDraw, finaleTapeSnapL;
-}
-.finale-tape-r {
-  animation-name: finaleTapeDraw, finaleTapeSnapR;
-}
 @keyframes finaleTapeSnapL {
   to {
-    transform: scaleX(1) translateX(-30%);
+    transform: scaleX(1) translateX(-40%) rotate(-1.5deg);
     opacity: 0;
   }
 }
 @keyframes finaleTapeSnapR {
   to {
-    transform: scaleX(1) translateX(30%);
+    transform: scaleX(1) translateX(40%) rotate(1.5deg);
     opacity: 0;
   }
 }
 
-/* lascas de luz a subir — poucas e lentas, sem confetti */
+/* o instante do corte: clarão curto e onda a abrir */
+.finale-flash {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background: var(--accent);
+  opacity: 0;
+  animation: finaleFlash 0.5s 1.02s var(--ease) forwards;
+}
+@keyframes finaleFlash {
+  12% {
+    opacity: 0.16;
+  }
+  to {
+    opacity: 0;
+  }
+}
+.finale-ring {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 34vmin;
+  height: 34vmin;
+  margin: -17vmin 0 0 -17vmin;
+  border: 1px solid var(--accent);
+  border-radius: 50%;
+  pointer-events: none;
+  opacity: 0;
+  transform: scale(0.2);
+  animation: finaleRing 1.5s 1.05s var(--ease) forwards;
+}
+@keyframes finaleRing {
+  10% {
+    opacity: 0.55;
+  }
+  to {
+    transform: scale(4.2);
+    opacity: 0;
+  }
+}
+
+/* lascas de luz: saem da fita em arco e continuam a cair devagar */
 .finale-sparks {
   position: absolute;
   inset: 0;
@@ -1410,58 +1475,165 @@ b {
   border-radius: 2px;
   background: var(--c);
   opacity: 0;
-  animation: finaleSpark var(--t) var(--d) var(--ease) forwards;
+  animation: finaleSpark var(--t) var(--d) cubic-bezier(0.16, 0.8, 0.36, 1)
+    forwards;
 }
 @keyframes finaleSpark {
-  10% {
-    opacity: 0.85;
+  8% {
+    opacity: 0.9;
+  }
+  55% {
+    transform: translate3d(calc(var(--dx) * 0.7), var(--dy), 0)
+      rotate(var(--r));
   }
   to {
-    transform: translate3d(var(--dx), var(--dy), 0) rotate(var(--r));
+    transform: translate3d(var(--dx), calc(var(--dy) + 26vh), 0)
+      rotate(calc(var(--r) * 2));
     opacity: 0;
   }
 }
 
+/* ato 3 — reconhecimento */
 .finale-inner {
   position: relative;
   z-index: 1;
-  max-width: min(92vw, 620px);
+  width: min(94vw, 760px);
   padding: 24px;
   text-align: center;
 }
+.finale-trophy-wrap {
+  position: relative;
+  display: inline-block;
+  margin-bottom: 20px;
+  animation: finaleTrophy 1s 0.95s var(--spring) both,
+    finaleFloat 5s 2s var(--ease) infinite;
+}
 .finale-trophy {
   display: block;
-  height: clamp(74px, 13vh, 118px);
+  height: clamp(72px, 12.5vh, 116px);
   width: auto;
-  margin: 0 auto 22px;
-  filter: drop-shadow(0 0 2px rgba(255, 255, 255, 0.5))
-    drop-shadow(0 0 26px var(--accent-line));
-  animation: finaleRise 0.8s 0.5s var(--spring) both;
+  filter: drop-shadow(0 0 2px rgba(255, 255, 255, 0.55))
+    drop-shadow(0 0 30px var(--accent-line));
 }
+/* brilho a varrer a taça, uma vez, logo a seguir a aparecer */
+.finale-shine {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  -webkit-mask-image: url("trophy.png");
+  mask-image: url("trophy.png");
+  -webkit-mask-size: contain;
+  mask-size: contain;
+  -webkit-mask-repeat: no-repeat;
+  mask-repeat: no-repeat;
+  -webkit-mask-position: center;
+  mask-position: center;
+  background: linear-gradient(
+    100deg,
+    transparent 42%,
+    rgba(255, 255, 255, 0.85) 50%,
+    transparent 58%
+  );
+  background-size: 300% 100%;
+  background-position: 120% 0;
+  animation: finaleShine 1.1s 1.5s var(--ease) forwards;
+}
+@keyframes finaleShine {
+  to {
+    background-position: -60% 0;
+  }
+}
+@keyframes finaleTrophy {
+  from {
+    opacity: 0;
+    transform: translateY(26px) scale(0.86);
+  }
+}
+@keyframes finaleFloat {
+  50% {
+    transform: translateY(-7px);
+  }
+}
+
 .finale-eyebrow {
   font-size: 11px;
-  letter-spacing: 0.28em;
   color: var(--accent);
-  margin-bottom: 12px;
-  animation: finaleRise 0.7s 0.85s var(--ease) both;
+  margin-bottom: 18px;
+  letter-spacing: 0.6em;
+  text-indent: 0.6em;
+  animation: finaleTrack 1s 1.25s var(--ease) both;
+}
+@keyframes finaleTrack {
+  from {
+    opacity: 0;
+    letter-spacing: 1.2em;
+    text-indent: 1.2em;
+  }
+  to {
+    opacity: 1;
+    letter-spacing: 0.28em;
+    text-indent: 0.28em;
+  }
+}
+
+.finale-athletes {
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+  gap: clamp(20px, 6vw, 64px);
+  flex-wrap: wrap;
+}
+.finale-athletes.is-duo::before {
+  content: "×";
+  order: 1;
+  align-self: center;
+  font-size: clamp(18px, 3vw, 26px);
+  color: var(--muted-2);
+  animation: finaleReveal 0.8s 1.75s var(--ease) both;
+}
+.finale-athletes.is-duo .finale-athlete:last-child {
+  order: 2;
+}
+.finale-athlete {
+  --delay: 1.4s;
+  min-width: 8ch;
 }
 .finale-name {
-  font-size: clamp(2rem, min(7vw, 9vh), 3.4rem);
+  font-size: clamp(1.7rem, min(6vw, 8vh), 2.9rem);
   font-weight: 600;
   letter-spacing: -0.03em;
   line-height: 1.05;
-  animation: finaleRise 0.7s 1s var(--ease) both;
+  /* o nome é revelado por baixo de uma máscara, não simplesmente esbatido */
+  animation: finaleWipe 0.85s var(--delay) var(--ease) both;
+}
+@keyframes finaleWipe {
+  from {
+    opacity: 0;
+    clip-path: inset(0 0 100% 0);
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    clip-path: inset(0 0 0 0);
+    transform: none;
+  }
 }
 .finale-km {
   display: flex;
   align-items: baseline;
   justify-content: center;
-  gap: 10px;
-  margin-top: 14px;
-  animation: finaleRise 0.7s 1.15s var(--ease) both;
+  gap: 8px;
+  margin-top: 10px;
+  animation: finaleKm 0.9s calc(var(--delay) + 0.15s) var(--spring) both;
+}
+@keyframes finaleKm {
+  from {
+    opacity: 0;
+    transform: translateY(12px) scale(0.94);
+  }
 }
 .finale-km-num {
-  font-size: clamp(2.6rem, min(9vw, 12vh), 4.6rem);
+  font-size: clamp(2.2rem, min(8vw, 10vh), 3.8rem);
   font-weight: 500;
   letter-spacing: -0.04em;
   line-height: 1;
@@ -1469,24 +1641,31 @@ b {
   font-variant-numeric: tabular-nums;
 }
 .finale-km-unit {
-  font-size: 12px;
+  font-size: 11px;
   letter-spacing: 0.12em;
   color: var(--muted);
 }
-.finale-line {
-  margin-top: 16px;
+.finale-stats {
+  margin-top: 10px;
+  font-size: 10.5px;
+  letter-spacing: 0.14em;
+  color: var(--muted-2);
+  animation: finaleReveal 0.8s calc(var(--delay) + 0.35s) var(--ease) both;
+}
+.finale-goal {
+  margin-top: 26px;
   font-size: 11px;
-  letter-spacing: 0.16em;
+  letter-spacing: 0.2em;
   color: var(--muted);
-  animation: finaleRise 0.7s 1.3s var(--ease) both;
+  animation: finaleReveal 0.8s 2.1s var(--ease) both;
 }
 .finale-sub {
-  max-width: 32ch;
-  margin: 18px auto 0;
+  max-width: 34ch;
+  margin: 16px auto 0;
   font-size: clamp(13px, 1.5vw, 15px);
   line-height: 1.5;
   color: var(--muted);
-  animation: finaleRise 0.7s 1.45s var(--ease) both;
+  animation: finaleReveal 0.8s 2.25s var(--ease) both;
 }
 .finale-close {
   margin-top: 30px;
@@ -1499,16 +1678,25 @@ b {
   border-radius: 100px;
   cursor: pointer;
   transition: border-color 0.25s var(--ease), color 0.25s var(--ease);
-  animation: finaleRise 0.7s 1.6s var(--ease) both;
+  animation: finaleReveal 0.8s 2.45s var(--ease) both;
 }
 .finale-close:hover {
   border-color: var(--accent-line);
   color: var(--accent);
 }
-@keyframes finaleRise {
+@keyframes finaleReveal {
   from {
     opacity: 0;
-    transform: translateY(14px);
+    transform: translateY(12px);
+  }
+}
+
+@media (max-width: 560px) {
+  .finale-athletes {
+    gap: 18px;
+  }
+  .finale-athletes.is-duo::before {
+    display: none; /* a dois, empilham — o × deixa de fazer sentido */
   }
 }
 
@@ -1516,6 +1704,9 @@ b {
 .runner.is-done {
   border-color: var(--accent-line);
   box-shadow: 0 0 0 1px var(--accent-soft), 0 18px 50px rgba(0, 0, 0, 0.4);
+}
+.runner.is-done .runner-state {
+  cursor: pointer; /* rever a cerimónia */
 }
 
 /* ---------- Acessibilidade ---------- */
